@@ -1,8 +1,8 @@
 import { useState, type ChangeEvent } from "react";
 import { convertFileToBase64 } from "../../../../utils/convertobase64string";
-import { postService } from "../../../../services/server/postService";
+import { postService } from "../../../../services/postService";
 import useCurrentUser from "../useCurrentUser/hook";
-import type { PostRequest } from "../../../../dto/server/PostRequest";
+import type { PostRequest } from "../../../../dto/PostRequest";
 
 type UploadPostFormData = {
   files: File[];

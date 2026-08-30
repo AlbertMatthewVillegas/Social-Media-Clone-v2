@@ -2,11 +2,11 @@ import { useState, type ChangeEvent, type ReactNode } from "react";
 import { SearchContext } from "./context";
 import { HttpError } from "../../exceptions/HttpError";
 import type { UserEntity } from "../../entities/UserEntity";
-import { userService } from "../../services/server/userService";
+import { userService } from "../../services/userService";
 
 function SearchProvider({children}:{children?:ReactNode}){
     const [search,setSearch] = useState("");
-    const [results,setResults] = useState<UserEntity[] | 'loading' | 'error' | 'empty' >('empty')
+    const [results,setResults] = useState<UserEntity[] | 'loading' | 'error' | null >(null)
 
     const handleSearch = async (e:ChangeEvent<HTMLInputElement>) => {
         const {value} = e.target
@@ -16,7 +16,7 @@ function SearchProvider({children}:{children?:ReactNode}){
             try {
                 // TODO: fetch search results
                 const response = await userService.search(query)
-                setResults(response.entities)
+                setResults(response.entities || null)
             } catch (e: unknown){
                 if(e instanceof HttpError){
                     console.log(e.message);

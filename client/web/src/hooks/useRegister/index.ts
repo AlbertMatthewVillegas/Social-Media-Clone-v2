@@ -1,6 +1,6 @@
-import type { RegisterRequest } from "../../dto/auth/RegisterRequest";
+import type { RegisterRequest } from "../../dto/RegisterRequest";
 import { useState } from "react";
-import { authService } from "../../services/auth/authService";
+import { authService } from "../../services/authService";
 import { useNavigate } from "react-router";
 import { StateError } from "../../exceptions/StateError";
 import { HttpError } from "../../exceptions/HttpError";

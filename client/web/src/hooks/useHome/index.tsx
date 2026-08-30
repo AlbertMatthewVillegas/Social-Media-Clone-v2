@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type { PostEntity } from "../../entities/PostEntity"
-import { postService } from "../../services/server/postService"
+import { postService } from "../../services/postService"
 
 function useHome(){
     

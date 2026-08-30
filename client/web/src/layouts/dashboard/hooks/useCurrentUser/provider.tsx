@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { CurrentUserContext } from "./context";
 import type { CurrentUserContextType } from "./types";
 import type { UserEntity } from "../../../../entities/UserEntity";
-import type { Response } from "../../../../dto/server/Response";
-import { userService } from "../../../../services/server/userService";
+import type { Response } from "../../../../dto/Response";
+import { userService } from "../../../../services/userService";
 import { HttpError } from "../../../../exceptions/HttpError";
 
 function CurrentUserProvider({ children }: { children?: ReactNode }) {

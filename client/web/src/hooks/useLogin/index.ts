@@ -1,6 +1,6 @@
-import type { LoginRequest } from "../../dto/auth/LoginRequest";
+import type { LoginRequest } from "../../dto/LoginRequest";
 import { useState } from "react";
-import { authService } from "../../services/auth/authService";
+import { authService } from "../../services/authService";
 import { useNavigate } from "react-router";
 import { StateError } from "../../exceptions/StateError";
 import { HttpError } from "../../exceptions/HttpError";
