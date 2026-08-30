@@ -12,6 +12,9 @@ import com.zerofuku.socialmediaclone.exceptions.NoSuchAccountExistsException;
 import com.zerofuku.socialmediaclone.repositories.AuthRepository;
 import com.zerofuku.socialmediaclone.repositories.UserRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class AuthService {
 
@@ -32,35 +35,45 @@ public class AuthService {
     public AuthEntity login(LoginRequest request) throws IllegalArgumentException, NoSuchAccountExistsException {
         AuthEntity existingUser = authRepository.findByEmail(request.getEmail());
         if (existingUser == null) {
+            log.error("user does not exist, failed login.");
             throw new NoSuchAccountExistsException();
         }
 
         boolean isValid = passwordEncoder.matches(request.getPassword(), existingUser.getPassword());
         if (!isValid) {
+            log.error("Invalid Email or password for user authId: {}", existingUser.getAuthId());
             throw new IllegalArgumentException("Invalid email or password");
         }
 
+        log.info("User logged in succesfully! authId: {}", existingUser.getAuthId());
         return existingUser;
     }
 
     public AuthEntity register(RegisterRequest request) throws IllegalArgumentException, AccountAlreadyExistsException {
         AuthEntity existingUser = authRepository.findByEmail(request.getEmail());
-        if (existingUser != null) throw new AccountAlreadyExistsException();
+        if (existingUser != null) {
+            log.error("Registration failed, account already exists for email: {}", request.getEmail());
+            throw new AccountAlreadyExistsException();
+        }
+
         String hashedPassword = passwordEncoder.encode(request.getPassword());
         AuthEntity newUser = new AuthEntity(
             request.getEmail(),
-            hashedPassword
-        );
+                hashedPassword);
         
         AuthEntity savedUser = authRepository.save(newUser);
+        log.info("New auth account created, authId: {}", savedUser.getAuthId());
+
         UserEntity newUserEntity = new UserEntity(
             savedUser.getAuthId(),
             request.getUsername(),
             request.getFullname(),
             "",
-            ""  
-        );
+                "");
         userRepository.save(newUserEntity);
+        log.info("User profile created for authId: {}, username: {}", savedUser.getAuthId(), request.getUsername());
+
+        log.info("User registered successfully! authId: {}", savedUser.getAuthId());
         return savedUser;
     }
 

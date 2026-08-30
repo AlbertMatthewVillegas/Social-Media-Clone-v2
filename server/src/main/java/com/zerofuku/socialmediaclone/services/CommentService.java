@@ -9,81 +9,115 @@ import com.zerofuku.socialmediaclone.entities.CommentEntity;
 import com.zerofuku.socialmediaclone.entities.PostEntity;
 import com.zerofuku.socialmediaclone.entities.UserEntity;
 import com.zerofuku.socialmediaclone.exceptions.EntityNotFoundException;
-import com.zerofuku.socialmediaclone.exceptions.InvalidRequestException;
 import com.zerofuku.socialmediaclone.repositories.CommentRepository;
 import com.zerofuku.socialmediaclone.repositories.PostRepository;
 import com.zerofuku.socialmediaclone.repositories.UserRepository;
+import com.zerofuku.socialmediaclone.utils.SecurityUtils;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
 
-    public CommentService(CommentRepository commentRepository, PostRepository postRepository, UserRepository userRepository) {
+    public CommentService(
+            CommentRepository commentRepository,
+            PostRepository postRepository,
+            UserRepository userRepository) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
-        this.userRepository = userRepository;
     }
 
     @Transactional
-    public CommentEntity createComment(CommentRequest request, UUID authId){
-        UserEntity user = userRepository.findById(request.getUserId())
-            .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + request.getUserId()));
+    public CommentEntity createComment(CommentRequest request) {
+        UserEntity currentUser = SecurityUtils.getCurrentUser();
 
-        if(!authId.equals(user.getAuthId())) throw new InvalidRequestException();
+        SecurityUtils.validateOwnership(request.getUserId(), currentUser.getUserId());
 
         PostEntity post = postRepository.findById(request.getPostId())
-            .orElseThrow(() -> new EntityNotFoundException("Post not found with ID: " + request.getPostId()));
-        
-        CommentEntity comment = new CommentEntity(post, user, request.getText());
-        
-        return commentRepository.save(comment);
+                .orElseThrow(() -> {
+                    log.error("Post not found with ID: {}", request.getPostId());
+                    return new EntityNotFoundException("Post not found with ID: " + request.getPostId());
+                });
+
+        CommentEntity comment = new CommentEntity(post, currentUser, request.getText());
+        CommentEntity saved = commentRepository.save(comment);
+
+        log.info("Comment created, commentId: {}, postId: {}, userId: {}",
+                saved.getCommentId(), post.getPostId(), currentUser.getUserId());
+        return saved;
     }
 
     @Transactional
-    public CommentEntity updateComment(UUID commentId, CommentRequest newComment, UUID authId){
-        CommentEntity comment = commentRepository.findById(commentId)
-            .orElseThrow(() -> new EntityNotFoundException("Comment not found with ID: " + commentId));
+    public CommentEntity updateComment(UUID commentId, CommentRequest newComment) {
+        UserEntity currentUser = SecurityUtils.getCurrentUser();
 
-        if(!comment.getUser().getAuthId().equals(authId)) throw new InvalidRequestException();
-    
+        CommentEntity comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> {
+                    log.error("Comment not found with ID: {}", commentId);
+                    return new EntityNotFoundException("Comment not found with ID: " + commentId);
+                });
+
+        SecurityUtils.validateOwnership(comment.getUser().getUserId(), currentUser.getUserId());
+
         comment.setText(newComment.getText());
-        return commentRepository.save(comment);
+        CommentEntity updated = commentRepository.save(comment);
+
+        log.info("Comment updated, commentId: {}, userId: {}", updated.getCommentId(), currentUser.getUserId());
+        return updated;
     }
 
     @Transactional
-    public void deleteComment(UUID commentId,UUID authId){
-        CommentEntity comment = commentRepository.findById(commentId)
-            .orElseThrow(() -> new EntityNotFoundException("Comment not found with ID: " + commentId));
+    public void deleteComment(UUID commentId) {
+        UserEntity currentUser = SecurityUtils.getCurrentUser();
 
-        if(!comment.getUser().getAuthId().equals(authId)) throw new InvalidRequestException();
-        
+        CommentEntity comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> {
+                    log.error("Comment not found with ID: {}", commentId);
+                    return new EntityNotFoundException("Comment not found with ID: " + commentId);
+                });
+
+        SecurityUtils.validateOwnership(comment.getUser().getUserId(), currentUser.getUserId());
+
         commentRepository.delete(comment);
+        log.info("Comment deleted, commentId: {}, userId: {}", commentId, currentUser.getUserId());
     }
 
     @Transactional
-    public CommentEntity likeComment(UUID commentId, UUID userId) throws EntityNotFoundException {
+    public CommentEntity likeComment(UUID commentId) {
+        UserEntity currentUser = SecurityUtils.getCurrentUser();
+
         CommentEntity comment = commentRepository.findById(commentId)
-            .orElseThrow(() -> new EntityNotFoundException("Comment not found with ID: " + commentId));
-        UserEntity user = userRepository.findById(userId)
-            .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
-        
-        comment.addLike(user);
-        return commentRepository.save(comment);
+                .orElseThrow(() -> {
+                    log.error("Comment not found with ID: {}", commentId);
+                    return new EntityNotFoundException("Comment not found with ID: " + commentId);
+                });
+
+        comment.addLike(currentUser);
+        CommentEntity saved = commentRepository.save(comment);
+
+        log.info("Comment liked, commentId: {}, userId: {}", commentId, currentUser.getUserId());
+        return saved;
     }
 
     @Transactional
-    public CommentEntity unlikeComment(UUID commentId, UUID userId) throws EntityNotFoundException {
+    public CommentEntity unlikeComment(UUID commentId) {
+        UserEntity currentUser = SecurityUtils.getCurrentUser();
+
         CommentEntity comment = commentRepository.findById(commentId)
-            .orElseThrow(() -> new EntityNotFoundException("Comment not found with ID: " + commentId));
-        UserEntity user = userRepository.findById(userId)
-            .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
-        
-        comment.removeLike(user);
-        return commentRepository.save(comment);
+                .orElseThrow(() -> {
+                    log.error("Comment not found with ID: {}", commentId);
+                    return new EntityNotFoundException("Comment not found with ID: " + commentId);
+                });
+
+        comment.removeLike(currentUser);
+        CommentEntity saved = commentRepository.save(comment);
+
+        log.info("Comment unliked, commentId: {}, userId: {}", commentId, currentUser.getUserId());
+        return saved;
     }
 }

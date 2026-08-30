@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
@@ -16,15 +17,20 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
 @NoArgsConstructor
 public class UserEntity {
 
+    @JsonIgnore
     private UUID authId; // reference to auth microservice
 
     @Id
@@ -67,6 +73,10 @@ public class UserEntity {
         if (follower != null) {
             followers.remove(follower);
         }
+    }
+
+    public Boolean follows(UserEntity user) {
+        return following.contains(user); // checks if this user is following the user
     }
 
     public void addFollowing(UserEntity user) {

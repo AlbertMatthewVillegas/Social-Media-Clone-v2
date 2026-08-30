@@ -3,115 +3,141 @@ package com.zerofuku.socialmediaclone.services;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.zerofuku.socialmediaclone.dto.FollowRequest;
 import com.zerofuku.socialmediaclone.dto.UserRequest;
 import com.zerofuku.socialmediaclone.entities.UserEntity;
 import com.zerofuku.socialmediaclone.exceptions.EntityNotFoundException;
+import com.zerofuku.socialmediaclone.exceptions.InvalidRequestException;
 import com.zerofuku.socialmediaclone.repositories.UserRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
+import com.zerofuku.socialmediaclone.utils.SecurityUtils;
+
+
+@Slf4j
 @Service
 public class UserService {
-    @Autowired
-    private UserRepository repository;
 
-    public UserService(UserRepository repository){
+    private final UserRepository repository;
+
+    public UserService(UserRepository repository) {
         this.repository = repository;
     }
 
     public UserEntity findByUserId(UUID userId) throws EntityNotFoundException {
-        return repository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found for userId: " + userId));
+        return repository.findById(userId)
+            .orElseThrow(() -> {
+                log.error("User not found for userId: {}", userId);
+                return new EntityNotFoundException("User not found for userId: " + userId);
+            });
     }
 
     public UserEntity findByAuthId(UUID authId) throws IllegalArgumentException, EntityNotFoundException {
-        return repository.findByAuthId(authId).orElseThrow(() -> new EntityNotFoundException("User not found for authId: " + authId));
+        return repository.findByAuthId(authId)
+            .orElseThrow(() -> {
+                log.error("User not found for authId: {}", authId);
+                return new EntityNotFoundException("User not found for authId: " + authId);
+            });
     }
 
-    public UserEntity findByUsername(String username){
-            return repository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));
+    public UserEntity findByUsername(String username) {
+        return repository.findByUsername(username)
+            .orElseThrow(() -> {
+                log.error("User not found with username: {}", username);
+                return new EntityNotFoundException("User not found with username: " + username);
+            });
     }
 
-    public List<UserEntity> findAllByUsername(String username){
-        return repository.findAllByUsernameContainingIgnoreCase(username);
+    public List<UserEntity> findAllByUsername(String username) {
+        List<UserEntity> results = repository.findAllByUsernameContainingIgnoreCase(username);
+        log.info("Found {} users matching username query: {}", results.size(), username);
+        return results;
     }
 
     @Transactional
-    public UserEntity updateUser(UUID authId, UserRequest newUser){
-        UserEntity oldUser = findByAuthId(authId);
+    public UserEntity updateCurrentUser(UserRequest newUser) {
+        
+        UserEntity oldUser = getCurrentUser();
+
+        log.info("Updating user, userId: {}", oldUser.getUserId());
+
         oldUser.setBio(newUser.getBio());
         oldUser.setFullname(newUser.getFullname());
         oldUser.setUsername(newUser.getUsername());
         oldUser.setProfilePicture(newUser.getProfilePicture());
-        return repository.save(oldUser);
-    }
 
-    @Transactional
-    public UserEntity addFollower(FollowRequest request) throws EntityNotFoundException {
-        UserEntity user = findByUserId(request.getUserId());
-        UserEntity follower = findByUserId(request.getTargetUserId());
-        
-        if (!user.getFollowers().contains(follower)) {
-            follower.addFollowing(user);
-            repository.save(follower);
-            user.addFollower(follower);
-            return repository.save(user);
-        }
-        return user;
-    }
-
-    @Transactional
-    public UserEntity removeFollower(UUID userId, UUID targetUserId) throws EntityNotFoundException {
-        UserEntity follower = findByUserId(userId);
-        UserEntity user = findByUserId(targetUserId);
-        
-        follower.removeFollowing(user);
-        repository.save(follower);
-        user.removeFollower(follower);
-        return repository.save(user);
+        UserEntity updated = repository.save(oldUser);
+        log.info("User updated successfully, userId: {}", updated.getUserId());
+        return updated;
     }
 
     public List<UserEntity> getFollowers(UUID userId) throws EntityNotFoundException {
         findByUserId(userId); // Verify user exists
-        return repository.findFollowersByUserId(userId);
-    }
-
-    public long getFollowerCount(UUID userId) throws EntityNotFoundException {
-        findByUserId(userId); // Verify user exists
-        return repository.countFollowersByUserId(userId);
-    }
-
-    public boolean isFollowedBy(UUID userId, UUID followerId) throws EntityNotFoundException {
-        findByUserId(userId); // Verify both users exist
-        findByUserId(followerId);
-        return repository.isFollowedBy(userId, followerId);
+        List<UserEntity> followers = repository.findFollowersByUserId(userId);
+        log.info("Retrieved {} followers for userId: {}", followers.size(), userId);
+        return followers;
     }
 
     @Transactional
-    public UserEntity addFollowing(UUID userId, UUID targetUserId) throws EntityNotFoundException {
-        UserEntity user = findByUserId(userId);
-        UserEntity targetUser = findByUserId(targetUserId);
-        
-        user.addFollowing(targetUser);
-        targetUser.addFollower(user);
-        repository.save(user);
-        repository.save(targetUser);
-        return user;
+    public UserEntity addFollower(UUID targetUserId) throws EntityNotFoundException { // ADDS YOU AS A FOLLOWER TO SOMEONE ELSE'S ACCOUNT
+        UserEntity target = findByUserId(targetUserId);
+        UserEntity currentUser = getCurrentUser();
+
+        if (currentUser.follows(target)) {
+            log.error("target user already follows current user, invalid request");
+            throw new InvalidRequestException("target user doesn't follow current user, invalid request");
+        }
+
+        target.addFollower(currentUser);
+        currentUser.addFollowing(target);
+
+        return currentUser;
     }
 
     @Transactional
-    public UserEntity removeFollowing(UUID userId, UUID targetUserId) throws EntityNotFoundException {
-        UserEntity user = findByUserId(userId);
-        UserEntity targetUser = findByUserId(targetUserId);
-        
-        user.removeFollowing(targetUser);
-        targetUser.removeFollower(user);
-        repository.save(user);
-        repository.save(targetUser);
-        return user;
+    public UserEntity removeFollower(UUID targetUserId) throws EntityNotFoundException, InvalidRequestException {
+        UserEntity follower = findByUserId(targetUserId);
+        UserEntity currentUser = getCurrentUser();
+        if(!follower.follows(currentUser)){
+            log.error("follower doesn't follow current user, invalid request");
+            throw new InvalidRequestException("target user doesn't follow current user, invalid request");
+        }
+        currentUser.removeFollower(follower);
+        follower.removeFollowing(currentUser);
+        UserEntity saved = repository.save(currentUser);
+        log.info("current User {} removed follower {}", currentUser.getUserId(), follower.getUserId());
+        return saved;
     }
 
+    @Transactional
+    public UserEntity removeFollowing(UUID targetUserId) throws EntityNotFoundException, InvalidRequestException {
+        UserEntity following = findByUserId(targetUserId);
+        UserEntity currentUser = getCurrentUser();
+
+        if (!currentUser.follows(following)) {
+            log.error("current user doesn't follow target user, invalid request");
+            throw new InvalidRequestException("target user doesn't follow current user, invalid request");
+        }
+
+        currentUser.removeFollowing(following);
+        following.removeFollower(currentUser);
+
+        log.info("User {} unfollowed {}", currentUser.getUserId(), following.getUserId());
+        return currentUser;
+    }
+
+    //  UTILITY FUNCTIONS
+
+    @Transactional
+    public UserEntity getCurrentUser() {
+        UserEntity principal = SecurityUtils.getCurrentUser();
+        if (principal == null) {
+            throw new EntityNotFoundException("No authenticated user");
+        }
+        return repository.findById(principal.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found for userId: " + principal.getUserId()));
+    }
 }

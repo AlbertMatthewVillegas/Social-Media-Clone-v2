@@ -3,26 +3,24 @@ package com.zerofuku.socialmediaclone.services;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.zerofuku.socialmediaclone.dto.PostRequest;
 import com.zerofuku.socialmediaclone.entities.PostEntity;
 import com.zerofuku.socialmediaclone.entities.UserEntity;
-import com.zerofuku.socialmediaclone.exceptions.InvalidRequestException;
 import com.zerofuku.socialmediaclone.repositories.PostRepository;
+import com.zerofuku.socialmediaclone.utils.SecurityUtils;
 
-import jakarta.persistence.EntityNotFoundException;
+import com.zerofuku.socialmediaclone.exceptions.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class PostService {
 
-    @Autowired
-    private PostRepository repository;
-
-    @Autowired
-    private UserService userService;
+    private final PostRepository repository;
+    private final UserService userService;
 
     public PostService(PostRepository repository, UserService userService) {
         this.repository = repository;
@@ -30,75 +28,101 @@ public class PostService {
     }
 
     @Transactional
-    public PostEntity createPost(
-        PostRequest request, 
-        UUID authId
-    ) {
-        UserEntity user = userService.findByUserId(request.getUserId());
-
-        if(!user.getAuthId().equals(authId)) throw new InvalidRequestException();
+    public PostEntity createPost(PostRequest request) {
+        UserEntity currentUser = SecurityUtils.getCurrentUser();
 
         PostEntity newPost = new PostEntity(
-            request.getContent(),
-            request.getTitle(),
-            request.getDescription(),
-            user
-        );
-        return repository.save(newPost);
+                request.getContent(),
+                request.getTitle(),
+                request.getDescription(),
+                currentUser);
+
+        PostEntity saved = repository.save(newPost);
+        log.info("Post created, postId: {}, userId: {}", saved.getPostId(), currentUser.getUserId());
+        return saved;
     }
 
-    public List<PostEntity> getAllPosts(){
-        return repository.findAll();
+    public List<PostEntity> getAllPosts() {
+        List<PostEntity> posts = repository.findAll();
+        log.info("Retrieved {} posts", posts.size());
+        return posts;
     }
 
-    public List<PostEntity> getAllPosts(UUID userId){
+    public List<PostEntity> getAllPosts(UUID userId) {
         UserEntity user = userService.findByUserId(userId);
-        return repository.findByUser(user);
+        List<PostEntity> posts = repository.findByUser(user);
+        log.info("Retrieved {} posts for userId: {}", posts.size(), userId);
+        return posts;
     }
 
     @Transactional
-    public PostEntity updatePost(
-        UUID postId, 
-        PostRequest newPost, 
-        UUID authId
-    ){
-        PostEntity oldPost = repository.findById(postId).orElseThrow(() -> new EntityNotFoundException());
+    public PostEntity updatePost(UUID postId, PostRequest newPost) {
+        UserEntity currentUser = SecurityUtils.getCurrentUser();
 
-        if (oldPost.getUser().getAuthId().equals(authId)) throw new InvalidRequestException();
-        
+        PostEntity oldPost = repository.findById(postId)
+                .orElseThrow(() -> {
+                    log.error("Post not found with ID: {}", postId);
+                    return new EntityNotFoundException("Post not found with ID: " + postId);
+                });
+
+        SecurityUtils.validateOwnership(oldPost.getUser().getAuthId(), currentUser.getAuthId());
+
         oldPost.setTitle(newPost.getTitle());
         oldPost.setContent(newPost.getContent());
         oldPost.setDescription(newPost.getDescription());
-        return repository.save(oldPost);
+
+        PostEntity updated = repository.save(oldPost);
+        log.info("Post updated, postId: {}, userId: {}", updated.getPostId(), currentUser.getUserId());
+        return updated;
     }
 
     @Transactional
-    public void deletePost(
-        UUID postId, 
-        UUID authId
-    ){
-        PostEntity post = repository.findById(postId).orElseThrow(() -> new EntityNotFoundException());
+    public void deletePost(UUID postId) {
+        UserEntity currentUser = SecurityUtils.getCurrentUser();
 
-        if (post.getUser().getAuthId().equals(authId)) throw new InvalidRequestException();
+        PostEntity post = repository.findById(postId)
+                .orElseThrow(() -> {
+                    log.error("Post not found with ID: {}", postId);
+                    return new EntityNotFoundException("Post not found with ID: " + postId);
+                });
+
+        SecurityUtils.validateOwnership(post.getUser().getAuthId(), currentUser.getAuthId());
 
         repository.delete(post);
+        log.info("Post deleted, postId: {}, userId: {}", postId, currentUser.getUserId());
     }
 
     @Transactional
-    public PostEntity likePost(UUID postId, UUID userId) throws EntityNotFoundException {
-        PostEntity post = repository.findById(postId).orElseThrow(() -> new EntityNotFoundException());
-        UserEntity user = userService.findByUserId(userId);
-        
-        post.addLike(user);
-        return repository.save(post);
+    public PostEntity likePost(UUID postId) {
+        UserEntity currentUser = SecurityUtils.getCurrentUser();
+
+        PostEntity post = repository.findById(postId)
+                .orElseThrow(() -> {
+                    log.error("Post not found with ID: {}", postId);
+                    return new EntityNotFoundException("Post not found with ID: " + postId);
+                });
+
+        post.addLike(currentUser);
+        PostEntity saved = repository.save(post);
+
+        log.info("Post liked, postId: {}, userId: {}", postId, currentUser.getUserId());
+        return saved;
     }
 
     @Transactional
-    public PostEntity unlikePost(UUID postId, UUID userId) throws EntityNotFoundException {
-        PostEntity post = repository.findById(postId).orElseThrow(() -> new EntityNotFoundException());
-        UserEntity user = userService.findByUserId(userId);
-        
-        post.removeLike(user);
-        return repository.save(post);
+    public PostEntity unlikePost(UUID postId) {
+        UserEntity currentUser = SecurityUtils.getCurrentUser();
+
+        PostEntity post = repository.findById(postId)
+                .orElseThrow(() -> {
+                    log.error("Post not found with ID: {}", postId);
+                    return new EntityNotFoundException("Post not found with ID: " + postId);
+                });
+
+        post.removeLike(currentUser);
+        PostEntity saved = repository.save(post);
+
+        log.info("Post unliked, postId: {}, userId: {}", postId, currentUser.getUserId());
+        return saved;
     }
 }

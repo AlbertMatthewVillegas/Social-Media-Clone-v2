@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.zerofuku.socialmediaclone.dto.ListResponse;
 import com.zerofuku.socialmediaclone.dto.PostRequest;
 import com.zerofuku.socialmediaclone.dto.Response;
-import com.zerofuku.socialmediaclone.dto.LikeRequest;
 import com.zerofuku.socialmediaclone.entities.PostEntity;
 import com.zerofuku.socialmediaclone.services.PostService;
 @RestController
@@ -34,12 +32,11 @@ public class PostController {
         this.postService = postService;
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Response<PostEntity>> createPost(
-        @AuthenticationPrincipal UUID authId, 
         @RequestBody PostRequest request
     ){
-        PostEntity postEntity = postService.createPost(request,authId);
+        PostEntity postEntity = postService.createPost(request);
         Response<PostEntity> response = new Response<>(
             "successfully created new post!",
             postEntity
@@ -75,11 +72,10 @@ public class PostController {
 
     @PutMapping("/{postId}")
     public ResponseEntity<Response<PostEntity>> updatePost(
-        @AuthenticationPrincipal UUID authId,
         @PathVariable UUID postId,
         @RequestBody PostRequest request
     ) {
-        PostEntity postEntity = postService.updatePost(postId, request, authId);
+        PostEntity postEntity = postService.updatePost(postId, request);
         Response<PostEntity> response = new Response<>(
             "successfully updated post!",
             postEntity
@@ -89,19 +85,17 @@ public class PostController {
 
     @DeleteMapping("/{postId}")
     public ResponseEntity<String> deletePost(
-        @AuthenticationPrincipal UUID authId,
         @PathVariable UUID postId
     ) {
-        postService.deletePost(postId, authId);
+        postService.deletePost(postId);
         return ResponseEntity.ok("successfully deleted post: " + postId);
     }
 
     @PostMapping("/{postId}/like")
     public ResponseEntity<Response<PostEntity>> likePost(
-        @PathVariable UUID postId,
-        @RequestBody LikeRequest request
+        @PathVariable UUID postId
     ) {
-        PostEntity post = postService.likePost(postId, request.getUserId());
+        PostEntity post = postService.likePost(postId);
         Response<PostEntity> response = new Response<>(
             "successfully liked post",
             post
@@ -109,12 +103,11 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{postId}/like/{userId}")
+    @DeleteMapping("/{postId}/like")
     public ResponseEntity<Response<PostEntity>> unlikePost(
-        @PathVariable UUID postId,
-        @PathVariable UUID userId
+        @PathVariable UUID postId
     ) {
-        PostEntity post = postService.unlikePost(postId, userId);
+        PostEntity post = postService.unlikePost(postId);
         Response<PostEntity> response = new Response<>(
             "successfully unliked post",
             post

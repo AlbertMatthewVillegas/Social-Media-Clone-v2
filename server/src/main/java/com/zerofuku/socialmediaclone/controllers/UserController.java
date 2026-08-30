@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.zerofuku.socialmediaclone.dto.ListResponse;
 import com.zerofuku.socialmediaclone.dto.Response;
 import com.zerofuku.socialmediaclone.dto.UserRequest;
-import com.zerofuku.socialmediaclone.dto.FollowRequest;
 import com.zerofuku.socialmediaclone.entities.UserEntity;
 import com.zerofuku.socialmediaclone.services.UserService;
 
@@ -56,9 +54,8 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<Response<UserEntity>> getCurrentUser(
-        @AuthenticationPrincipal UUID authId
     ){
-        UserEntity currentUser = service.findByAuthId(authId);
+        UserEntity currentUser = service.getCurrentUser();
         Response<UserEntity> response = new Response<>(
             "successfully retrieved current user!",
             currentUser
@@ -68,10 +65,9 @@ public class UserController {
 
     @PutMapping("/me") 
     public ResponseEntity<Response<UserEntity>> updateCurrentUser(
-        @AuthenticationPrincipal UUID authId, 
         @RequestBody UserRequest request
     ){
-        UserEntity currentUser = service.updateUser(authId,request);
+        UserEntity currentUser = service.updateCurrentUser(request);
         Response<UserEntity> response = new Response<>(
             "successfully retrieved current user!",
             currentUser
@@ -79,11 +75,22 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/followers")
+    @GetMapping("/{userId}/followers")
+    public ResponseEntity<ListResponse<UserEntity>> getFollowers(
+            @PathVariable UUID userId) {
+        List<UserEntity> followers = service.getFollowers(userId);
+        ListResponse<UserEntity> response = new ListResponse<>(
+                "successfully retrieved followers",
+                followers,
+                followers.size());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/followers/{followerId}")
     public ResponseEntity<Response<UserEntity>> addFollower(
-        @RequestBody FollowRequest request
+        @PathVariable UUID followerId
     ){
-        UserEntity user = service.addFollower(request);
+        UserEntity user = service.addFollower(followerId);
         Response<UserEntity> response = new Response<>(
             "successfully added follower",
             user
@@ -91,12 +98,11 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{userId}/followers/{followerId}")
+    @DeleteMapping("/followers/{followerId}")
     public ResponseEntity<Response<UserEntity>> removeFollower(
-        @PathVariable UUID userId,
         @PathVariable UUID followerId
     ){
-        UserEntity user = service.removeFollower(userId, followerId);
+        UserEntity user = service.removeFollower(followerId);
         Response<UserEntity> response = new Response<>(
             "successfully removed follower",
             user
@@ -104,62 +110,12 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{userId}/followers")
-    public ResponseEntity<ListResponse<UserEntity>> getFollowers(
-        @PathVariable UUID userId
-    ){
-        List<UserEntity> followers = service.getFollowers(userId);
-        ListResponse<UserEntity> response = new ListResponse<>(
-            "successfully retrieved followers",
-            followers,
-            followers.size()
-        );
-        return ResponseEntity.ok(response);
-    }
 
-    @GetMapping("/{userId}/followers/count")
-    public ResponseEntity<Response<Long>> getFollowerCount(
-        @PathVariable UUID userId
-    ){
-        long count = service.getFollowerCount(userId);
-        Response<Long> response = new Response<>(
-            "successfully retrieved follower count",
-            count
-        );
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/{userId}/followers/{followerId}/check")
-    public ResponseEntity<Response<Boolean>> isFollowedBy(
-        @PathVariable UUID userId,
-        @PathVariable UUID followerId
-    ){
-        boolean isFollowed = service.isFollowedBy(userId, followerId);
-        Response<Boolean> response = new Response<>(
-            "successfully checked follow status",
-            isFollowed
-        );
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/following")
-    public ResponseEntity<Response<UserEntity>> addFollowing(
-        @RequestBody FollowRequest request
-    ){
-        UserEntity user = service.addFollowing(request.getUserId(), request.getTargetUserId());
-        Response<UserEntity> response = new Response<>(
-            "successfully added following",
-            user
-        );
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/{userId}/following/{targetUserId}")
+    @DeleteMapping("/following/{targetUserId}")
     public ResponseEntity<Response<UserEntity>> removeFollowing(
-        @PathVariable UUID userId,
         @PathVariable UUID targetUserId
     ){
-        UserEntity user = service.removeFollowing(userId, targetUserId);
+        UserEntity user = service.removeFollowing(targetUserId);
         Response<UserEntity> response = new Response<>(
             "successfully removed following",
             user

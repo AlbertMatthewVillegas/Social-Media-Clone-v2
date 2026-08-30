@@ -14,9 +14,9 @@ import com.zerofuku.socialmediaclone.dto.RegisterRequest;
 import com.zerofuku.socialmediaclone.entities.AuthEntity;
 import com.zerofuku.socialmediaclone.exceptions.AccountAlreadyExistsException;
 import com.zerofuku.socialmediaclone.exceptions.FailedAccountCreationException;
-import com.zerofuku.socialmediaclone.exceptions.NoSuchAccountExistsException;
 import com.zerofuku.socialmediaclone.services.AuthService;
-import com.zerofuku.socialmediaclone.services.JwtService;
+import com.zerofuku.socialmediaclone.utils.JwtUtils;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -24,17 +24,17 @@ import jakarta.servlet.http.HttpServletResponse;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final AuthService authService;
-    private final JwtService jwtService;
+    private final JwtUtils jwtUtils;
 
     @Value("${jwt.secret.expiration}")
     private Long JWT_EXPIRATION_MS;
 
     public AuthController(
-        JwtService jwtService,
+        JwtUtils jwtUtils,
         AuthService authService
     ){
         this.authService = authService;
-        this.jwtService = jwtService;
+        this.jwtUtils = jwtUtils;
     }
 
     @PostMapping("/login")
@@ -44,7 +44,7 @@ public class AuthController {
     ) {
         AuthEntity auth = authService.login(request);
         String claims = auth.getAuthId().toString() + ":" + auth.getRole().toString();
-        String token = jwtService.generateToken(claims);
+        String token = jwtUtils.generateToken(claims);
 
         Cookie cookie = new Cookie("auth_token", token);
         cookie.setHttpOnly(true);
@@ -64,7 +64,7 @@ public class AuthController {
     ) {
         AuthEntity auth = authService.register(request);
         String claims = auth.getAuthId().toString() + ":" + auth.getRole().toString();
-        String token = jwtService.generateToken(claims);
+        String token = jwtUtils.generateToken(claims);
 
         Cookie cookie = new Cookie("auth_token", token);
         cookie.setHttpOnly(true);
@@ -80,16 +80,6 @@ public class AuthController {
     @ExceptionHandler(AccountAlreadyExistsException.class)
     public ResponseEntity<String> handleAccountAlreadyExistsException(AccountAlreadyExistsException exception){
         return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getMessage());
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArguementException(IllegalArgumentException exception){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
-    }
-
-    @ExceptionHandler(NoSuchAccountExistsException.class)
-    public ResponseEntity<String> handleNoSuchAccountExistsException(NoSuchAccountExistsException exception){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
     }
 
     @ExceptionHandler(FailedAccountCreationException.class)

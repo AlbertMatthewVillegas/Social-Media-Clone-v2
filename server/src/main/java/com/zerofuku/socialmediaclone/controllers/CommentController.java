@@ -4,13 +4,11 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.zerofuku.socialmediaclone.dto.CommentRequest;
 import com.zerofuku.socialmediaclone.dto.Response;
-import com.zerofuku.socialmediaclone.dto.LikeRequest;
 import com.zerofuku.socialmediaclone.entities.CommentEntity;
 import com.zerofuku.socialmediaclone.services.CommentService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,12 +27,11 @@ public class CommentController {
         this.service = service;
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Response<CommentEntity>> createComment(
-        @AuthenticationPrincipal UUID authId,
         @RequestBody CommentRequest request
     ) {
-        CommentEntity comment = service.createComment(request,authId);
+        CommentEntity comment = service.createComment(request);
         Response<CommentEntity> response = new Response<>(
             "successfully created comment!",
             comment
@@ -44,11 +41,10 @@ public class CommentController {
 
     @PutMapping("/{commentId}")
     public ResponseEntity<Response<CommentEntity>> updateComment(
-        @AuthenticationPrincipal UUID authId,
         @PathVariable UUID commentId,
         @RequestBody CommentRequest newComment
     ) {
-        CommentEntity comment = service.updateComment(commentId, newComment, authId);
+        CommentEntity comment = service.updateComment(commentId, newComment);
         Response<CommentEntity> response = new Response<>(
             "successfully uppdated comment: " + commentId,
             comment
@@ -58,19 +54,17 @@ public class CommentController {
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<String> deleteComment(
-        @AuthenticationPrincipal UUID authId,
         @PathVariable UUID commentId
     ) {
-        service.deleteComment(commentId, authId);
+        service.deleteComment(commentId);
         return ResponseEntity.ok("successfully delete comment: " + commentId);
     }
 
     @PostMapping("/{commentId}/like")
     public ResponseEntity<Response<CommentEntity>> likeComment(
-        @PathVariable UUID commentId,
-        @RequestBody LikeRequest request
+        @PathVariable UUID commentId
     ) {
-        CommentEntity comment = service.likeComment(commentId, request.getUserId());
+        CommentEntity comment = service.likeComment(commentId);
         Response<CommentEntity> response = new Response<>(
             "successfully liked comment",
             comment
@@ -78,12 +72,11 @@ public class CommentController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{commentId}/like/{userId}")
+    @DeleteMapping("/{commentId}/like")
     public ResponseEntity<Response<CommentEntity>> unlikeComment(
-        @PathVariable UUID commentId,
-        @PathVariable UUID userId
+        @PathVariable UUID commentId
     ) {
-        CommentEntity comment = service.unlikeComment(commentId, userId);
+        CommentEntity comment = service.unlikeComment(commentId);
         Response<CommentEntity> response = new Response<>(
             "successfully unliked comment",
             comment
