@@ -1,6 +1,6 @@
-import type { LoginRequest } from "../../dto/auth/LoginRequest";
-import type { RegisterRequest } from "../../dto/auth/RegisterRequest";
-import { HttpError } from "../../exceptions/HttpError";
+import type { LoginRequest } from "../dto/LoginRequest";
+import type { RegisterRequest } from "../dto/RegisterRequest";
+import { HttpError } from "../exceptions/HttpError";
 
 export const authService = {
   login: async (payload: LoginRequest): Promise<string> => {
