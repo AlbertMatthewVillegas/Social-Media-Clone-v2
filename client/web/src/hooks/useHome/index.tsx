@@ -1,0 +1,27 @@
+import { useEffect, useState } from "react"
+import type { PostEntity } from "../../entities/PostEntity"
+import { postService } from "../../services/server/postService"
+
+function useHome(){
+    
+    const [posts, setPosts] = useState<PostEntity[] | 'loading' | null>(null)
+    
+    useEffect(()=>{
+        try {
+            const loadPosts = async () => {
+                setPosts('loading')
+                const response = await postService.getAllPosts()
+                setPosts(response.entities as PostEntity[])
+            }
+            loadPosts()
+        } catch (error) {
+            console.error(error)
+        }
+    },[])
+
+    return {
+        posts
+    }
+}
+
+export default useHome

@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+* {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+h1 {
+    font-size:xx-large;
+    font-weight:800;
+    color: white;
+}
+
+h2 {
+    font-size: large;
+    font-weight: 600;
+    color: white;
+}
+
+h3 {
+    font-size: medium;
+    font-weight: 400;
+    color: white;
+}
+
+p {
+    font-size: small;
+}
+
+label {
+    font-size: small;
+    font-weight: 400;
+    color: white;
+}
+
+button {
+    cursor: pointer;
+}
+/* 
+    COLORS
+    
+    Primary Background: #151918
+
+    Secondary Background: #212624
+
+    Heading: #FFFFFF
+
+    Paragraph & Border: #948D83
+
+    Highlight: #F9DD55
+
+    Tip: #A5EECE
+
+    Note: #A8B4F7
+
+    Error: #E14F62
+
+    primary background - 151918
+    secondary - 212624
+    heading - white
+    paragraph & border - 148141131
+    highlight - 249 221 85
+    tip - 165238206
+    note - 168180247
+    error - 2257998
+*/
