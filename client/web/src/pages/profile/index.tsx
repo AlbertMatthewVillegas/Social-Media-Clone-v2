@@ -1,108 +1,127 @@
-import { CircleUser } from "lucide-react"
-import useProfile from "../../hooks/useProfile"
-import PostPreview from "../../components/PostPreview"
-import LoadingSpinner from "../../components/LoadingSpinner"
-import { PopUpProvider } from "../../hooks/usePopUp/provider"
-import type { ProfilePostType, ProfileUserType } from "../../hooks/useProfile/types"
+import { Camera, CircleUser, Heart, MessageCircle } from "lucide-react"
+import { motion } from "motion/react"
 import Button from "../../components/Button"
+import LoadingSpinner from "../../components/LoadingSpinner"
+import MediaRenderer from "../../components/MediaRenderer"
+import type { PostEntity } from "../../entities/PostEntity"
+import type { UserEntity } from "../../entities/UserEntity"
+import useProfile from "../../hooks/useProfile"
+import { PopUpProvider } from "../../hooks/usePopUp/provider"
 
 function ProfilePage(){
-    const { user, posts, isFollowing, isCurrentUser, handleFollow, handleUnfollow } = useProfile()
+    const { user, isCurrentUser, isFollowing, initializing } = useProfile()
     
-    return (
-        <div className="flex flex-col  min-h-screen overflow-y-auto">
-            <div className="flex flex-col min-h-120 w-full justify-center items-center">
-                <ProfileCard user={user} posts={posts}/>
-                {isCurrentUser ?(
-                    <div className="flex flex-row gap-4 w-full">
-                        <Button> edit profile </Button>
-                        <Button> view archive </Button>
-                    </div>
-                ):(
-                    <div className="flex flex-row gap-4 w-full">
-                        {isFollowing ? (
-                            <Button onClick={() => handleUnfollow()}>unfollow</Button>
-                        ) : (
-                            <Button onClick={() => handleFollow()}>follow</Button>
-                        )}
-                    </div>
-                )}
-            </div>
-            <ProfilePosts posts={posts} />
-        </div>
-    )
-}
-
-function ProfilePosts({ posts }:{ posts : ProfilePostType}){
-    if (posts === 'loading') {
+    if(initializing) {
         return (
-            <div>
+            <div className="flex w-full min-h-screen justify-center items-center">
                 <LoadingSpinner/>
             </div>
         )
     }
 
-    if (posts === 'empty' || posts === 'error' || posts.length === 0) {
-        return (
-            <div className="">
-                <h1> Share Photos </h1>
-                <p> When you share photos, they will appear on your profile. </p>
-            </div>
-        )
-    }
-
     return (
-        <div className=" m-4 flex flex-inline">
-            {posts.map((post)=>(
-                <PopUpProvider key={post.postId}>
-                    <PostPreview post={post}/>
-                </PopUpProvider>
-            ))}
-        </div>
-    )
-}
+        <div className="flex flex-col  min-h-screen overflow-y-auto p-3 w-full">
+            <div className="border border-white flex w-full h-full flex-col"> 
+                <ProfileCard user={user}/>
+                <ProfileMisc isFollowing={isFollowing} isCurrentUser={isCurrentUser}/>
+                <PostListView posts={user?.posts}/>
 
-function ProfileCard({ user, posts }:{ user: ProfileUserType, posts : ProfilePostType }) {
-    if (user === 'loading') {
-        return <h1>Data is loading....</h1>
-    }
-    if (user === 'empty') {
-        return null
-    }
-    if (user === 'error') {
-        return <h1>No data found</h1>
-    }
-
-    return (
-        <div className="flex flex-row gap-4 p-3 w-full justify-center items-center">
-            {user.profilePicture ? (
-                <img 
-                    src={user.profilePicture} 
-                    width={80} 
-                    height={80} 
-                    alt="user-profile-picture" 
-                    className="rounded-full" 
-                />
-            ) : (
-                <CircleUser size={80} />
-            )}
-            <div className="flex flex-col gap-4">
-                <h2>{user.username}</h2>
-                <p>{user.fullname}</p>
-                <div className="flex flex-col gap-2">
-                    <p>{user.bio}</p>
-                    <p>
-                        {posts.length} posts 
-                        {'  '}
-                        {user.followers.length} {user.followers.length > 1 ? 'followers' : 'follower'} 
-                        {'  '}
-                        {user.following.length} following 
-                    </p>
-                </div>
             </div>
-            
         </div>
     )
 }
 
 export default ProfilePage
+
+function ProfileCard({ user }: { user: UserEntity | undefined }) {
+    if(user === undefined) {
+        return null
+    }
+
+    const { profilePicture, fullname, username, followers, following, bio, posts } = user
+    const hasPfp = profilePicture ? true : false
+    const imgSize = 160 
+
+    return <div className="flex flex-row gap-4">
+        {hasPfp ? <img src={profilePicture} alt="current-user-profile-picture" height={imgSize} width={imgSize} /> : <CircleUser size={imgSize} />}
+        <div className="flex flex-col gap-4">
+            <h2> {fullname}</h2>
+            <h2> {username}</h2>
+            <h2> {posts?.length} posts {followers?.length} followers {following?.length} following </h2>
+            <h2> {bio || 'no bio yet, start writting.'} </h2>
+        </div>
+    </div>
+}
+
+function ProfileMisc({ isFollowing, isCurrentUser }: { isFollowing: boolean | undefined, isCurrentUser: boolean }){
+    if(isCurrentUser){
+        return (
+            <div className="flex flex-row gap-3">
+                <Button> edit profile </Button>
+                <Button> view archive </Button>
+            </div>
+        )
+    }
+
+    if(isFollowing){
+        return (
+            <div className="flex flex-row gap-3">
+                <Button> following </Button>
+                <Button> message </Button>
+            </div>
+        )
+    } 
+
+    return (
+            <div className="flex flex-row gap-3">
+                <Button> follow </Button>
+                <Button> message </Button>
+            </div>
+        )
+
+}
+
+function PostListView({posts}:{posts:PostEntity[] | undefined}){
+    if(posts === undefined){
+        return <h1>failed to load posts</h1>
+    }
+
+    if(posts.length === 0){
+        return (
+            <div className="flex flex-col gap-4 w-full">
+                <div className="border rounded-full w-fit p-3">
+                    <Camera size={50}/>
+                </div>
+                <h1>Share Photos</h1>
+                <p>When you share photos, they will appear on your profile.</p>
+                
+            </div>
+        )
+    }
+
+    return (
+        <div className="flex flex-row gap-4">
+            {posts.map((post)=>(
+                <div className="relative border rounded-xl w-100 h-160 overflow-hidden group" key={post.postId}>
+                    <PopUpProvider>
+                        <MediaRenderer src={post.content?.at(0)} />
+
+                        <motion.div
+                            className=" cursor-pointer absolute inset-0 flex items-center justify-center gap-6 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                            initial={false}
+                        >
+                            <div className="flex items-center gap-1">
+                                <Heart size={20} fill="white" />
+                                <span>{post.likes?.length ?? 0}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <MessageCircle size={20} fill="white" />
+                                <span>{post.comments?.length ?? 0}</span>
+                            </div>
+                        </motion.div>
+                    </PopUpProvider> {/* TODO: create a function component that pops up and redirects to /p/postId later */}
+                </div>
+            ))}
+        </div>
+    )
+}

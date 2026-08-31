@@ -2,18 +2,17 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { CurrentUserContext } from "./context";
 import type { CurrentUserContextType } from "./types";
 import type { UserEntity } from "../../../../entities/UserEntity";
-import type { Response } from "../../../../dto/Response";
 import { userService } from "../../../../services/userService";
 import { HttpError } from "../../../../exceptions/HttpError";
 
 function CurrentUserProvider({ children }: { children?: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<Response<UserEntity> | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserEntity | undefined>(undefined);
 
   const refreshCurrentUser = async () => {
     try {
       // TODO: fetch current user
       const response = await userService.getCurrentUser();
-      setCurrentUser(response)
+      setCurrentUser(response.entity)
     } catch (error) {
       if(error instanceof HttpError){
         console.error(error.message, error.cause)

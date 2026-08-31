@@ -32,7 +32,6 @@ export function useUploadPost() {
 
   const handlePost = async () => {
     const postOwner = currentUser?.userId
-    console.log(currentUser)
     if (!postOwner) return;
 
     const fileData: string[] = await Promise.all(

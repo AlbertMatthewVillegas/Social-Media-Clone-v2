@@ -4,7 +4,7 @@ import { postService } from "../../services/postService"
 
 function useHome(){
     
-    const [posts, setPosts] = useState<PostEntity[] | 'loading' | null>(null)
+    const [posts, setPosts] = useState<PostEntity[] | 'loading' | undefined>(undefined)
     
     useEffect(()=>{
         try {

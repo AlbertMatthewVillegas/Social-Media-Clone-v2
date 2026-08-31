@@ -6,7 +6,7 @@ function useCurrentUser() {
   if (!context) {
     throw new Error("useCurrentUser must be used within CurrentUserProvider");
   }
-  const user = context.currentUser?.entity
+  const user = context.currentUser
   return user
 }
 

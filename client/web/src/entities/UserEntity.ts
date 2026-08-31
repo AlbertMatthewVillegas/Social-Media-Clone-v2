@@ -1,3 +1,5 @@
+import type { PostEntity } from "./PostEntity";
+
 export interface UserEntity {
   userId?: string; // uuid
   username?: string;
@@ -7,4 +9,5 @@ export interface UserEntity {
   createdAt?: string; // date-time
   followers?: UserEntity[];
   following?: UserEntity[];
+  posts?: PostEntity[]
 }

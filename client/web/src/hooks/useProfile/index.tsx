@@ -1,53 +1,35 @@
 import { useEffect, useState } from "react"
-import { useParams } from "react-router"
-import type { UserEntity } from "../../entities/UserEntity"
+import { useParams } from "react-router-dom"
 import useCurrentUser from "../../layouts/dashboard/hooks/useCurrentUser/hook"
+import type { UserEntity } from "../../entities/UserEntity"
 import { userService } from "../../services/userService"
-import type { ProfilePostType, ProfileUserType } from "./types"
-
-// TODO: make this shorter
-// TODO: the whole page is rendering when follow/unfollow is clicked
 
 function useProfile() {
-    const { slug } = useParams()
-    const [user, setUser] = useState<ProfileUserType>('loading')
-    const [posts, setPosts] = useState<ProfilePostType>('loading')
-    const [isCurrentUser, setIsCurrentUser] = useState(false)
-    const [isFollowing, setIsFollowing] = useState(false)
+    const { username } = useParams()
     const currentUser = useCurrentUser()
-    
+    const [user, setUser] = useState<UserEntity | undefined>(undefined)
+
+    const isCurrentUser = user?.userId === currentUser?.userId;
+    const isFollowing = user?.followers?.some((follower) => follower.userId === currentUser?.userId);
+
     useEffect(() => {
-        const loadUser = async () => {
-            if (!slug) {
-                setUser('empty')
-                setPosts('empty')
-                return
-            }
+        if (!username) return;
 
-            setUser('loading')
-            setPosts('loading')
-
+        const checkIfCurrentUser = async () => {
             try {
-                const response = await userService.getUser(slug)
-                const fetchedUser = response.entity as UserEntity
-                setUser(fetchedUser)
-            } catch {
-                setUser('error')
-                setPosts('error')
+                const fetchedUser = await userService.getUser(username)
+                setUser(fetchedUser.entity)
+            } catch (error) {
+                console.error(error)
             }
         }
-        loadUser()
-    }, [slug])
+        checkIfCurrentUser()
 
-    const handleFollow = async () => {
+    }, [username, currentUser])
 
-    } 
+    const initializing = username === undefined || currentUser === undefined || user === undefined
 
-    const handleUnfollow = async () => {
-
-    }
-
-    return { user, posts, isCurrentUser, isFollowing, handleFollow, handleUnfollow }
+    return { user, isCurrentUser,isFollowing, initializing }
 }
 
 export default useProfile

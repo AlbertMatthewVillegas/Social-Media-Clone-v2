@@ -15,17 +15,17 @@ function PostCard({ post }:{ post : PostEntity }){
                     <p>{post.user?.fullname}</p>
                 </div>
 
-                <p>{getTimeElapsed(post.createdAt,'letter')}</p>
+                <p>{getTimeElapsed(post.createdAt || '','letter')}</p>
             </div>
             <div className="flex flex-row gap-4 max-w-120 overflow-auto border rounded-2xl">
-                {post.content.length === 0 ? ( 
+                {post.content?.length === 0 ? ( 
                     <div className="w-100 h-120 rounded-2xl">
                         Error Loading Media
                         
                     </div> 
                 ):(
-                    post.content.map((media, index) => (
-                    <MediaRenderer src={media} key={`${media}-${index}`} idx={index}/>
+                    post.content?.map((media, index) => (
+                    <MediaRenderer src={media} key={`${media}-${index}`}/>
                 ))) }
             </div>
             <h2>{post.title}</h2>
@@ -35,11 +35,11 @@ function PostCard({ post }:{ post : PostEntity }){
                 <button>
                     <Heart/>    
                 </button> 
-                {post.likes.length}
+                {post.likes?.length || 0}
                 <button>
                     <MessageCircle/>
                 </button> 
-                {post.comments.length}
+                {post.comments?.length || 0}
             </div>
         </div>
     )
