@@ -7,6 +7,7 @@ import SearchPage from "./pages/search"
 import ProfilePage from "./pages/profile"
 import HomePage from "./pages/home"
 import ChatPage from "./pages/chat"
+import AccountsLayout from "./layouts/accounts"
 
 function App() {
   return (
@@ -21,7 +22,7 @@ function App() {
               <Route path="/search" element={<SearchPage/>} />
               <Route path="/p/:postId" element={<></>} /> 
 
-              <Route element={<></>}>
+              <Route element={<AccountsLayout/>}>
                 <Route path="/accounts/edit" element={<></>}/>
               </Route> 
 

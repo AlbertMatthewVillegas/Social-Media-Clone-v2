@@ -38,9 +38,11 @@ function PostListView(){
     }
 
     return (
-        <div className="flex w-full h-full items-center justify-center">
+        <div className="flex w-full h-full items-center justify-center flex-col">
             {posts.map((post:PostEntity) => (
-                <PostCard post={post} key={post.postId}/>
+                <div className="flex w-full min-h-screen justify-center items-center" key={post.postId}>
+                    <PostCard post={post} key={post.postId}/>
+                </div>
             ))}
         </div>
     )

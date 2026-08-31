@@ -11,44 +11,44 @@ function DashboardSidebar() {
   const user = useCurrentUser()
 
   return (
-    <div className="h-screen p-4 flex flex-col justify-between">
-      <div>
-        <h3> zerofuku </h3>
-      </div>
-      <div className="flex flex-col gap-4">
-        <AnimatedNavButton onClick={()=>navigate('/home')}>
-          <Home /> home
-        </AnimatedNavButton>
-        <AnimatedNavButton onClick={()=>navigate('/messages')}>
-          <MessageCircle /> messages
-        </AnimatedNavButton>
-        <AnimatedNavButton onClick={()=>navigate('/search')}>
-          <Search /> search
-        </AnimatedNavButton>
-        <NotificationSidebar>
-          <Heart /> notifications  
-        </NotificationSidebar>  
+    <>
+      {/* spacer: reserves the same width in the layout flow, but renders nothing visible */}
+      <div className="w-64 shrink-0" aria-hidden="true" />
 
-        <CreateButton>
-          <Plus/> create
-        </CreateButton>
+      <div className="fixed top-0 left-0 h-screen w-64 p-4 flex flex-col justify-between">
+        <div>
+          <h3> zerofuku </h3>
+        </div>
+        <div className="flex flex-col gap-4">
+          <AnimatedNavButton onClick={()=>navigate('/home')}>
+            <Home /> home
+          </AnimatedNavButton>
+          <AnimatedNavButton onClick={()=>navigate('/messages')}>
+            <MessageCircle /> messages
+          </AnimatedNavButton>
+          <AnimatedNavButton onClick={()=>navigate('/search')}>
+            <Search /> search
+          </AnimatedNavButton>
+          <NotificationSidebar>
+            <Heart /> notifications  
+          </NotificationSidebar>  
+
+          <CreateButton>
+            <Plus/> create
+          </CreateButton>
+          
+          <AnimatedNavButton onClick={()=>navigate('/'+user?.username)}>
+            {user?.profilePicture ? (<img src={user.profilePicture} alt="Profile" className="w-6 h-6 rounded-full" />) : <UserCircle/>} profile
+          </AnimatedNavButton>
+        </div>
+
+        <MoreButton>
+          <Menu /> more
+        </MoreButton>
         
-        <AnimatedNavButton onClick={()=>navigate('/'+user?.username)}>
-          {user?.profilePicture ? (<img src={user.profilePicture} alt="Profile" className="w-6 h-6 rounded-full" />) : <UserCircle/>} profile
-        </AnimatedNavButton>
       </div>
-
-      <MoreButton>
-        <Menu /> more
-      </MoreButton>
-      
-    </div>
+    </>
   );
 }
-
-
-
-
-
 
 export default DashboardSidebar;
