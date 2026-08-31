@@ -11,21 +11,26 @@ import ChatPage from "./pages/chat"
 function App() {
   return (
     <>
-    <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage/>}/>
-          <Route path="/login" element={<LoginPage/>} />
-          <Route path="/register" element={<RegisterPage/>} />
-          <Route element={<DashboardLayout/>}>
-            <Route path="/home" element={<HomePage/>}/>
-            <Route path="/search" element={<SearchPage/>} />
-            <Route path="/p/:slug" element={<></>} /> 
-            <Route path="/messages" element={<ChatPage/>}/>
-            <Route path="/:slug" element={<ProfilePage/>} /> 
-          </Route>
-        </Routes>
+      <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LandingPage/>}/>
+            <Route path="/login" element={<LoginPage/>} />
+            <Route path="/register" element={<RegisterPage/>} />
+            <Route element={<DashboardLayout/>}>
+              <Route path="/home" element={<HomePage/>}/>
+              <Route path="/search" element={<SearchPage/>} />
+              <Route path="/p/:postId" element={<></>} /> 
+
+              <Route element={<></>}>
+                <Route path="/accounts/edit" element={<></>}/>
+              </Route> 
+
+              <Route path="/messages" element={<ChatPage/>}/>
+              <Route path="/:username" element={<ProfilePage/>} /> 
+            </Route>
+          </Routes>
       </BrowserRouter>
-  </>
+    </>
 
 
   )
