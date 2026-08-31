@@ -20,15 +20,13 @@ import com.zerofuku.socialmediaclone.utils.SecurityUtils;
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    private static final int MAX_REQUESTS_PER_MINUTE = 60;
+    private static final int MAX_REQUESTS_PER_MINUTE = 100000;
     private final ConcurrentHashMap<String, AtomicInteger> requestCounter = new ConcurrentHashMap<>();
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        AntPathMatcher PATH_MATCHER = new AntPathMatcher();
         String path = request.getServletPath();
-        return SecurityUtils.EXCLUDED_PATHS.stream()
-                .anyMatch(pattern -> PATH_MATCHER.match(pattern, path));
+        return SecurityUtils.EXCLUDED_PATHS.stream().anyMatch(path::startsWith);
     }
     
     @Override
