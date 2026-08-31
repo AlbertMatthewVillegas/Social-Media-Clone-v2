@@ -22,12 +22,14 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "post")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class PostEntity {
 
@@ -46,6 +48,7 @@ public class PostEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
+	@JsonIgnoreProperties({ "followers", "following", "posts", "hibernateLazyInitializer", "handler" })
 	private UserEntity user;
 
 	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
