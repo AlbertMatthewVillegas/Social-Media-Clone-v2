@@ -4,10 +4,10 @@ import SettingsSidebar from "./components/SettingsSidebar"
 
 function AccountsLayout(){
     return (
-        <div className="">
+        <div className="flex flex-row w-full">
             <SearchProvider>
-            <SettingsSidebar/>
-            <Outlet/>
+                <SettingsSidebar/>
+                <Outlet/>
             </SearchProvider>
         </div>
     )

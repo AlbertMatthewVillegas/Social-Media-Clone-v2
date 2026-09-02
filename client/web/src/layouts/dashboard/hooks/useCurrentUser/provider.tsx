@@ -32,8 +32,13 @@ function CurrentUserProvider({ children }: { children?: ReactNode }) {
     return () => window.clearInterval(interval);
   }, []);
 
+  const updateCurrentUser = (newUser : UserEntity) => {
+    setCurrentUser(newUser)
+  }
+
   const value = useMemo<CurrentUserContextType>(() => ({
-    currentUser
+    currentUser,
+    updateCurrentUser
   }), [currentUser]);
 
   return (

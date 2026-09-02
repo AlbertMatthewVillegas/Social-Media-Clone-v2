@@ -57,10 +57,10 @@ function ProfileCard() {
     return <div className="flex flex-row gap-4">
         {hasPfp ? <img src={profilePicture} alt="current-user-profile-picture" height={imgSize} width={imgSize} /> : <CircleUser size={imgSize} />}
         <div className="flex flex-col gap-4">
-            <h2> {fullname}</h2>
-            <h2> {username}</h2>
-            <h2> {posts?.length} posts {followers?.length} followers {following?.length} following </h2>
-            <h2> {bio || 'no bio yet, start writting.'} </h2>
+            <span> {fullname}</span>
+            <span> {username}</span>
+            <span> {posts?.length} posts {followers?.length} followers {following?.length} following </span>
+            <span> {bio || 'no bio yet, start writting.'} </span>
         </div>
     </div>
 }

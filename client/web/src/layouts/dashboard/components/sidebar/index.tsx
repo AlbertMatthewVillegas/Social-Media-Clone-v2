@@ -8,7 +8,7 @@ import MoreButton from "../more-popup";
 
 function DashboardSidebar() {
   const navigate = useNavigate()
-  const user = useCurrentUser()
+  const { currentUser } = useCurrentUser()
 
   return (
     <>
@@ -37,8 +37,8 @@ function DashboardSidebar() {
             <Plus/> create
           </CreateButton>
           
-          <AnimatedNavButton onClick={()=>navigate('/'+user?.username)}>
-            {user?.profilePicture ? (<img src={user.profilePicture} alt="Profile" className="w-6 h-6 rounded-full" />) : <UserCircle/>} profile
+          <AnimatedNavButton onClick={()=>navigate('/'+currentUser?.username)}>
+            {currentUser?.profilePicture ? (<img src={currentUser.profilePicture} alt="Profile" className="w-6 h-6 rounded-full" />) : <UserCircle/>} profile
           </AnimatedNavButton>
         </div>
 

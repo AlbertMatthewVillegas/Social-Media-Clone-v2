@@ -8,6 +8,7 @@ import ProfilePage from "./pages/profile"
 import HomePage from "./pages/home"
 import ChatPage from "./pages/chat"
 import AccountsLayout from "./layouts/accounts"
+import EditProfilePage from "./pages/edit"
 
 function App() {
   return (
@@ -23,7 +24,7 @@ function App() {
               <Route path="/p/:postId" element={<></>} /> 
 
               <Route element={<AccountsLayout/>}>
-                <Route path="/accounts/edit" element={<></>}/>
+                <Route path="/accounts/edit" element={<EditProfilePage/>}/>
               </Route> 
 
               <Route path="/messages" element={<ChatPage/>}/>

@@ -44,6 +44,7 @@ public class UserEntity {
     @Column(nullable = false, unique = true)
     private String username;
     private String fullname;
+    @Column(name = "profile_picture", columnDefinition = "TEXT")
     private String profilePicture;
     private String bio;
 
