@@ -7,7 +7,7 @@ import ProfileContext from "./context"
 
 function ProfileProvider({ children }: { children: ReactNode }) {
     const { username } = useParams()
-    const currentUser = useCurrentUser()
+    const { currentUser }= useCurrentUser()
     const [user, setUser] = useState<UserEntity | undefined>(undefined)
 
     const navigate = useNavigate()

@@ -18,7 +18,7 @@ const initialFormData: UploadPostFormData = {
 
 export function useUploadPost() {
   const [formData, setFormData] = useState<UploadPostFormData>(initialFormData);
-  const currentUser = useCurrentUser()
+  const { currentUser }= useCurrentUser()
   const handleChange = (field: keyof UploadPostFormData, value: string) => {
     setFormData((previous) => ({ ...previous, [field]: value }));
   };

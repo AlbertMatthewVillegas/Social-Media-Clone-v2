@@ -8,13 +8,13 @@ import useCurrentUser from "../../layouts/dashboard/hooks/useCurrentUser/hook";
 
 function HomePage() {
     
-    const user = useCurrentUser()
+    const { currentUser } = useCurrentUser()
     return (
        <div className="flex flex-row w-full p-8">
             <div className="flex-1 ">
                 <PostListView/>
             </div>
-            <CurrentUserCard user={user}/>
+            <CurrentUserCard user={currentUser}/>
        </div>
     );
 }
@@ -38,7 +38,7 @@ function PostListView(){
     }
 
     return (
-        <div className="flex w-full h-full items-center justify-center flex-col">
+        <div className="flex w-full items-center justify-center flex-col min-h-screen">
             {posts.map((post:PostEntity) => (
                 <div className="flex w-full min-h-screen justify-center items-center" key={post.postId}>
                     <PostCard post={post} key={post.postId}/>
