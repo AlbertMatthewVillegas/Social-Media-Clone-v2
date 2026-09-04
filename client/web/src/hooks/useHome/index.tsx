@@ -3,9 +3,9 @@ import type { PostEntity } from "../../entities/PostEntity"
 import { postService } from "../../services/postService"
 
 function useHome(){
-    
+
     const [posts, setPosts] = useState<PostEntity[] | 'loading' | undefined>(undefined)
-    
+
     useEffect(()=>{
         try {
             const loadPosts = async () => {
@@ -19,8 +19,13 @@ function useHome(){
         }
     },[])
 
+    const handleUpdatePosts = (updatedPosts: PostEntity[]) => {
+        setPosts(updatedPosts)
+    }
+
     return {
-        posts
+        posts,
+        handleUpdatePosts
     }
 }
 

@@ -8,6 +8,7 @@ export interface ProfileContextValue {
     handleFollow: () => void
     handleUnfollow: () => void
     handleMessage: () => void
+    handleUpdateUser: (updatedUser: UserEntity) => void
     editProfile: () => void
     viewArchive: () => void
 }

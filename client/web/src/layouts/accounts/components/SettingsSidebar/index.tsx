@@ -1,4 +1,4 @@
-import { useState, type ButtonHTMLAttributes, type ElementType } from "react"; 
+import { useState, type ButtonHTMLAttributes, type ElementType } from "react";
 import { Search,UserCircle2,User,Bell,Lock,Star,Ban,EyeOff,Filter,AtSign,MessageCircle,Repeat2 } from "lucide-react";
 import useSearch from "../../../../hooks/useSearch/hook";
 import { useNavigate } from "react-router-dom";
@@ -33,9 +33,9 @@ export default function SettingsSidebar() {
               {section.label}
             </div>
             <div className="space-y-0.5">
-              
-                {section.items.map((item)=>(
-                    <Button sectionItem={item} active={active} onClick={()=> {
+
+                {section.items.map((item) => (
+                  <Button key={`${section.label}-${item.text}`} sectionItem={item} active={active} onClick={()=> {
                         setActive(item.text)
                         navigate(item.route || '', { replace: false })
                     }}/>
@@ -62,10 +62,10 @@ function Button({ active, sectionItem, className = "", ...props }: ButtonProps) 
       {...props}
       disabled={sectionItem.status}
       className={`w-full flex items-center gap-3 rounded-xl px-3 py-3 text-left text-[15px] transition-colors ${
-        sectionItem.status 
-          ? "opacity-50 cursor-not-allowed" 
-          : active === sectionItem.text 
-          ? "bg-neutral-800" 
+        sectionItem.status
+          ? "opacity-50 cursor-not-allowed"
+          : active === sectionItem.text
+          ? "bg-neutral-800"
           : "hover:bg-neutral-900"
       } ${className}`}
     >
@@ -97,12 +97,12 @@ const sections: Section[] = [
     {
         label: "Your Account",
         items: [
-            { 
-                icon: UserCircle2, 
-                text: "Account Center", 
-                description: "Password, security, personal details, connected experiences, ad preferences", 
-                route: "/accounts/profile", 
-                status: true 
+            {
+                icon: UserCircle2,
+                text: "Account Center",
+                description: "Password, security, personal details, connected experiences, ad preferences",
+                route: "/accounts/profile",
+                status: true
             }
         ],
     },

@@ -5,6 +5,10 @@ import { useHover } from "../../hooks/useHover";
 import type { PostEntity } from "../../entities/PostEntity";
 import PostPopUp from "../PostPopUp";
 
+// apparently state doesnt need to update here, eg. likes
+// and comments count will be updated when the user refreshes
+// the page, so we dont need to update the state here.
+
 interface PostPreviewProps {
     post : PostEntity
 }
@@ -12,6 +16,11 @@ interface PostPreviewProps {
 function PostPreview({ post }: PostPreviewProps) {
     const { isHovering, handleMouseEnter, handleMouseLeave } = useHover();
     const { openPopup, isPopupOpen } = usePopUp();
+    const firstPostContent = post.content?.at(0);
+
+    if(firstPostContent === undefined){
+        return null;
+    }
 
     return (
         <div
@@ -25,16 +34,16 @@ function PostPreview({ post }: PostPreviewProps) {
                 <div className="absolute z-10 bg-black/75 flex items-center justify-center w-full h-full">
                     <div className="flex items-center gap-4 text-white">
                         <Heart size={24} fill="white" />
-                        <span className="text-lg font-semibold">{post.likes.length}</span>
+                        <span className="text-lg font-semibold">{post.likes?.length}</span>
                         <MessageCircle size={24} fill="white" />
-                        <span className="text-lg font-semibold">{post.comments.length}</span>
+                        <span className="text-lg font-semibold">{post.comments?.length}</span>
                     </div>
                 </div>
             )}
 
-            <MediaRenderer src={post.content[0]} idx={0} />
+            <MediaRenderer src={firstPostContent} />
             {isPopupOpen && <PostPopUp post={post}/>}
-            
+
         </div>
     );
 }

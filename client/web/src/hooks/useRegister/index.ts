@@ -40,9 +40,9 @@ function useRegister() {
       });
 
       setStatus("success");
-      navigate("/profile");
+      navigate("/home");
     } catch (error) {
-  
+
       const errorMessage = error instanceof Error ? error.message : error instanceof HttpError ? error.statusCode + ' ' + error.message: "Failed to register";
       setStatus(new StateError(errorMessage));
     }

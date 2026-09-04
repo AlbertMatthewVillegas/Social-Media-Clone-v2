@@ -10,7 +10,7 @@ function EditProfilePage() {
             <h1 className="text-4xl font-bold mb-8">Edit Profile</h1>
             <div className="flex flex-col gap-4 w-full">
                 <EditProfileBody/>
-                
+
             </div>
         </div>
     );
@@ -22,7 +22,7 @@ function EditProfileBody() {
     const {currentUser} = useCurrentUser();
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const { handleInputChange, handleSubmit, handleProfilePictureChange } = useEditProfile()
-    
+
     if (!currentUser) {
         return (
             <div className="flex w-full min-h-screen justify-center items-center">
@@ -42,7 +42,7 @@ function EditProfileBody() {
     const { profilePicture, username, fullname, bio } = currentUser;
 
     const imgSharedSize = 120; // Set the desired size for the shared image
-    
+
     return (
         <div className="flex flex-col gap-4 p-4">
 
@@ -66,15 +66,15 @@ function EditProfileBody() {
             <Button type="button" className="mt-2" onClick={() => fileInputRef.current?.click()}>
                 Change Profile Picture
             </Button>
-            
+
         </div>
 
             <span className="text-sm text-gray-500">change fullname</span>
-            <input type="text" placeholder="Enter new fullname" className="border rounded px-2 py-1 text-sm" onChange={handleInputChange} name="fullname" />
+            <input value={fullname} type="text" placeholder="Enter new fullname" className="border rounded px-2 py-1 text-sm" onChange={handleInputChange} name="fullname" />
             <span className="text-sm text-gray-500">change username</span>
-            <input type="text" placeholder="Enter new username" className="border rounded px-2 py-1 text-sm" onChange={handleInputChange} name="username" />
+            <input value={username} type="text" placeholder="Enter new username" className="border rounded px-2 py-1 text-sm" onChange={handleInputChange} name="username" />
             <span className="text-sm text-gray-500">change bio</span>
-            <textarea placeholder="Enter new bio" className="border rounded px-2 py-1 text-sm" onChange={handleInputChange} name="bio" />
+            <textarea value={bio} placeholder="Enter new bio" className="border rounded px-2 py-1 text-sm" onChange={handleInputChange} name="bio" />
 
             <Button className="mt-4" onClick={handleSubmit}>
                 Save Changes

@@ -1,96 +1,219 @@
-import { Bookmark, ChevronLeft, ChevronRight, CircleUser, Heart, MessageCircle, Send, Smile, X } from "lucide-react";
+import {
+  Bookmark,
+  ChevronLeft,
+  ChevronRight,
+  CircleUser,
+  Heart,
+  MessageCircle,
+  Send,
+  Smile,
+  Ellipsis,
+  X,
+} from "lucide-react";
 import type { PostEntity } from "../../entities/PostEntity";
 import MediaRenderer from "../MediaRenderer";
 import { usePopUp } from "../../hooks/usePopUp/hook";
 import { usePostPopUp } from "../../hooks/usePostPopUp";
-import getTimeElapsed from "../../utils/getTimeElapsed";
-import { useEffect } from "react";
+import usePostEngagement from "../../hooks/usePostEngagement";
 
 interface PostPopUpProps {
-    post: PostEntity;
+  post: PostEntity;
 }
 
 function PostPopUp({ post }: PostPopUpProps) {
-    const { isPopupOpen, closePopup } = usePopUp();
-    const { currentIndex, totalSlides, goToPrevious, goToNext, goToSlide } = usePostPopUp(post);
+  const { isPopupOpen, closePopup } = usePopUp();
+  const { currentIndex, goToPrevious, goToNext } = usePostPopUp(post);
 
-    useEffect(()=>{
-        const result = isPopupOpen
-        console.log(result)
-    },[isPopupOpen])
+  if (!isPopupOpen || !post?.content?.length) {
+    return null;
+  }
 
-    if (!isPopupOpen || !post?.content?.length) {
-        return null;
-    }
+  const isFirstContent = currentIndex === 0;
+  const isLastContent = currentIndex === post.content?.length - 1;
 
-    return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-            onClick={closePopup}
-        >
-            <div
-                className="flex w-[960px] h-[560px] overflow-hidden rounded-2xl bg-black"
-                onClick={(event) => event.stopPropagation()}
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <button
+        className="text-white fixed right-10 top-10 z-10"
+        onClick={closePopup}
+      >
+        <X size={24} />
+      </button>
+      <div className="relative w-full flex flex-row  max-w-4xl h-full max-h-[80vh] bg-black rounded-lg overflow-hidden">
+        <div className="flex-5 flex items-center justify-center bg-black">
+          {!isFirstContent && (
+            <button
+              className="relative left-10 text-white z-10"
+              onClick={goToPrevious}
             >
-                <div className="flex-[3]">
-                    <MediaRenderer src={post.content[currentIndex]} idx={currentIndex} />
-                </div>
-
-                <div className="flex flex-[2] flex-col text-white">
-                    <div className="flex p-3 flex-row justify-between">
-                        <div className="flex flex-row gap-2 items-center p-2">
-                            {post.user.profilePicture ? post.user.profilePicture : (<CircleUser size={40} />)}
-                            <div className="flex flex-col">
-                                <h3>{post.user.username}</h3>
-                                <p>{post.user.fullname}</p>
-                            </div>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                closePopup();
-                            }}
-                            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-slate-100"
-                        >
-                            <X size={20} fill="black" />
-                        </button>
-                    </div>
-
-                    <hr />
-
-                    <div className="p-4 h-full w-full">
-                        <h3 className="text-xl font-semibold">{post.title}</h3>
-                        {post.description && <p className="mt-2 text-sm">{post.description}</p>}
-                    </div>
-
-                    <hr />
-
-                    <div className="flex flex-row gap-2 p-4">
-                        <Heart />
-                        <MessageCircle />
-                        <Send />
-                        <Bookmark />
-                    </div>
-                    <div className="p-4">
-                        <h3>{post.likes.length} likes</h3>
-                        <p>{getTimeElapsed(post.createdAt, 'phrase')}</p>
-                    </div>
-                    <hr></hr>
-                    <div className="p-4 w-full flex flex-row gap-4">
-                        <button>
-                            <Smile/>
-                        </button>
-
-                        <input className="w-full outline-none">
-                        
-                        </input>
-                        <button> Post </button>
-                    </div>
-                </div>
-            </div>
+              <ChevronLeft size={32} />
+            </button>
+          )}
+          <MediaRenderer src={post.content[currentIndex]} />
+          {!isLastContent && (
+            <button
+              className="relative right-10 text-white z-10"
+              onClick={goToNext}
+            >
+              <ChevronRight size={32} />
+            </button>
+          )}
         </div>
-    );
+
+        <div className="flex-4 flex flex-col p-4 bg-neutral-900">
+          <PostHeader {...post} />
+          <PostDetails {...post} />
+          <PostEngagementControls post={post} />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default PostPopUp;
+
+interface PostEngagementControlsProps {
+  post: PostEntity;
+}
+
+function PostEngagementControls({ post }: PostEngagementControlsProps) {
+  const {
+    post: engagementPost,
+    isLiked,
+    commentText,
+    setCommentText,
+    toggleLike,
+    addComment,
+  } = usePostEngagement(post);
+
+  return (
+    <div className="flex flex-col p-4 border">
+      <div className="flex flex-row items-center gap-4 mb-4">
+        <button
+          className="text-white"
+          onClick={toggleLike}
+        >
+          <Heart
+            size={24}
+            fill={isLiked ? "red" : "none"}
+          />
+        </button>
+        <button className="text-white">
+          <MessageCircle size={24} />
+        </button>
+        <button className="text-white">
+          <Bookmark size={24} />
+        </button>
+      </div>
+      <span className="text-white mb-4">{engagementPost.likes?.length} likes</span>
+      <div className="flex flex-row items-center gap-4">
+        <button className="text-white">
+          <Smile size={24} />
+        </button>
+        <input
+          type="text"
+          value={commentText}
+          onChange={(event) => setCommentText(event.target.value)}
+          placeholder="Add a comment..."
+          className="flex-1 bg-transparent outline-none text-white placeholder-neutral-400"
+        />
+        <button className="text-white" onClick={addComment}>
+          <Send size={24} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PostDetails(post: PostEntity) {
+  const imgSharedSize = 40; // Set the desired size for the shared image
+  const { user, title, description } = post;
+  return (
+    <div>
+      <div className="flex flex-row gap-2">
+        {user?.profilePicture ? (
+          <img
+            width={imgSharedSize}
+            height={imgSharedSize}
+            src={user?.profilePicture}
+            alt={user?.username}
+            className="rounded-full"
+          />
+        ) : (
+          <CircleUser />
+        )}
+        {user?.username} {title} {description}
+      </div>
+      {post.comments?.map(
+        (
+          comment, // TODO: implement a comment component later
+        ) => (
+          <div key={comment.commentId} className="flex flex-row gap-2 mt-2">
+            {comment.user?.profilePicture ? (
+              <img
+                width={40}
+                height={40}
+                src={comment.user?.profilePicture}
+                alt={comment.user?.username}
+                className="rounded-full"
+              />
+            ) : (
+              <CircleUser />
+            )}
+            <div className="flex flex-col">
+              <span className="text-white font-semibold">
+                {comment.user?.username}
+              </span>
+              <span className="text-white">{comment.text}</span>
+            </div>
+          </div>
+        ),
+      )}
+    </div>
+  );
+}
+
+function PostHeader(post: PostEntity) {
+  const imgSharedSize = 40; // Set the desired size for the shared image
+  const { user } = post;
+  if (!post) {
+    return (
+      <div className="flex-4 flex flex-col p-4 bg-neutral-900">
+        <span>Loading...</span>
+      </div>
+    );
+  }
+
+  if (post === undefined) {
+    return (
+      <div className="flex-4 flex flex-col p-4 bg-neutral-900">
+        <span>Error: User not found</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-row items-center justify-between gap-4 mb-4">
+      <div className="flex flex-row items-center gap-2">
+        {user?.profilePicture ? (
+          <img
+            width={imgSharedSize}
+            height={imgSharedSize}
+            src={user?.profilePicture}
+            alt={user?.username}
+            className="rounded-full"
+          />
+        ) : (
+          <CircleUser />
+        )}
+        <span className="text-white">{user?.username}</span>
+      </div>
+      <button className="text-white">
+        <Ellipsis size={24} />
+      </button>
+    </div>
+  );
+}

@@ -21,14 +21,14 @@ function App() {
             <Route element={<DashboardLayout/>}>
               <Route path="/home" element={<HomePage/>}/>
               <Route path="/search" element={<SearchPage/>} />
-              <Route path="/p/:postId" element={<></>} /> 
+              <Route path="/p/:postId" element={<></>} />
 
               <Route element={<AccountsLayout/>}>
                 <Route path="/accounts/edit" element={<EditProfilePage/>}/>
-              </Route> 
+              </Route>
 
               <Route path="/messages" element={<ChatPage/>}/>
-              <Route path="/:username" element={<ProfilePage/>} /> 
+              <Route path="/:username" element={<ProfilePage/>} />
             </Route>
           </Routes>
       </BrowserRouter>

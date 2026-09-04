@@ -23,8 +23,38 @@ function useEditProfile(initialValues?: Partial<UserRequest>) {
 
   const handleSubmit = async () => {
     try {
-      await userService.updateCurrentUser(user);
+      if(user.username === currentUser?.username && user.fullname === currentUser?.fullname && user.bio === currentUser?.bio && user.profilePicture === currentUser?.profilePicture) {
+        throw new Error("No changes made to the profile.");
+      }
+
+      if(user.username && user.username.length < 3) {
+        throw new Error("Username must be at least 3 characters long.");
+      }
+
+      if(user.fullname && user.fullname.length < 3) {
+        throw new Error("Fullname must be at least 3 characters long.");
+      }
+
+      if(user.bio && user.bio.length > 160) {
+        throw new Error("Bio must be less than 160 characters long.");
+      }
+
+      if(user.profilePicture && user.profilePicture.length === 0) {
+        throw new Error("Profile picture cannot be empty.");
+      }
+
+      const userToUpdate: UserRequest = {
+        // important because we want to send only the fields that have changed,
+        // and not overwrite existing fields with empty values
+        username: user.username || currentUser?.username,
+        fullname: user.fullname || currentUser?.fullname,
+        profilePicture: user.profilePicture || currentUser?.profilePicture,
+        bio: user.bio || currentUser?.bio,
+      }
+
+      await userService.updateCurrentUser(userToUpdate);
       updateCurrentUser({ ...currentUser, ...user });
+
     } catch (error) {
         // TODO: CHANGE LATER
       console.error(error);

@@ -11,7 +11,7 @@ function ProfileProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<UserEntity | undefined>(undefined)
 
     const navigate = useNavigate()
-    
+
     const isCurrentUser = user?.userId === currentUser?.userId
     const isFollowing = user?.followers?.some((follower) => follower.userId === currentUser?.userId)
 
@@ -53,7 +53,7 @@ function ProfileProvider({ children }: { children: ReactNode }) {
     }
 
     const handleMessage = () => {
-        // open a chatbox 
+        // open a chatbox
     }
 
     const editProfile = () => {
@@ -64,10 +64,28 @@ function ProfileProvider({ children }: { children: ReactNode }) {
         navigate("/archive/posts")
     }
 
+    const handleUpdateUser = (updatedUser: UserEntity) => {
+        // this function should be called when
+        // liking a post, following/unfollowing a user, or updating the profile and etc.
+        setUser(updatedUser)
+    }
+
     const initializing = username === undefined || currentUser === undefined || user === undefined
 
+    const value = {
+        user,
+        isCurrentUser,
+        isFollowing,
+        initializing,
+        handleFollow,
+        handleUnfollow,
+        handleMessage,
+        editProfile,
+        viewArchive,
+        handleUpdateUser
+    }
     return (
-        <ProfileContext.Provider value={{ user, isCurrentUser, isFollowing, initializing, handleFollow, handleUnfollow, handleMessage, editProfile, viewArchive }}>
+        <ProfileContext.Provider value={value}>
             {children}
         </ProfileContext.Provider>
     )
