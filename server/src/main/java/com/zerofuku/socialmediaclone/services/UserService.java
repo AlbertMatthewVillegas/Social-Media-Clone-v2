@@ -59,7 +59,27 @@ public class UserService {
 
     @Transactional
     public UserEntity updateCurrentUser(UserRequest newUser) {
-        
+
+        if(newUser.getUsername() == null || newUser.getUsername().isEmpty()) {
+            log.error("Username cannot be null or empty");
+            throw new InvalidRequestException("Username cannot be null or empty");
+        }
+
+        if(newUser.getFullname() == null || newUser.getFullname().isEmpty()) {
+            log.error("Fullname cannot be null or empty");
+            throw new InvalidRequestException("Fullname cannot be null or empty");
+        }
+
+        if(newUser.getBio() != null && newUser.getBio().length() > 160) {
+            log.error("Bio must be less than 160 characters long");
+            throw new InvalidRequestException("Bio must be less than 160 characters long");
+        }
+
+        if(newUser.getProfilePicture() == null || newUser.getProfilePicture().isEmpty()) {
+            log.error("Profile picture cannot be null or empty");
+            throw new InvalidRequestException("Profile picture cannot be null or empty");
+        }
+
         UserEntity oldUser = getCurrentUser();
 
         log.info("Updating user, userId: {}", oldUser.getUserId());

@@ -14,7 +14,7 @@ import com.zerofuku.socialmediaclone.utils.SecurityUtils;
 
 import com.zerofuku.socialmediaclone.exceptions.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-
+import com.zerofuku.socialmediaclone.exceptions.InvalidRequestException;
 @Slf4j
 @Service
 public class PostService {
@@ -29,6 +29,22 @@ public class PostService {
 
     @Transactional
     public PostEntity createPost(PostRequest request) {
+
+        if (request.getTitle().isEmpty() || request.getTitle() == null) {
+            log.error("Title cannot be null or empty");
+            throw new InvalidRequestException("Title cannot be null or empty");
+        }
+
+        if (request.getContent().isEmpty() || request.getContent() == null) {
+            log.error("Content cannot be null or empty");
+            throw new InvalidRequestException("Content cannot be null or empty");
+        }
+
+        if (request.getDescription() == null || request.getDescription().isEmpty()) {
+            log.error("Description cannot be null or empty");
+            throw new InvalidRequestException("Description cannot be null or empty");
+        }
+
         UserEntity currentUser = SecurityUtils.getCurrentUser();
 
         PostEntity newPost = new PostEntity(
@@ -57,6 +73,21 @@ public class PostService {
 
     @Transactional
     public PostEntity updatePost(UUID postId, PostRequest newPost) {
+        if (newPost.getTitle().isEmpty() || newPost.getTitle() == null) {
+            log.error("Title cannot be null or empty");
+            throw new InvalidRequestException("Title cannot be null or empty");
+        }
+
+        if (newPost.getContent().isEmpty() || newPost.getContent() == null) {
+            log.error("Content cannot be null or empty");
+            throw new InvalidRequestException("Content cannot be null or empty");
+        }
+
+        if (newPost.getDescription() == null || newPost.getDescription().isEmpty()) {
+            log.error("Description cannot be null or empty");
+            throw new InvalidRequestException("Description cannot be null or empty");
+        }
+
         UserEntity currentUser = SecurityUtils.getCurrentUser();
 
         PostEntity oldPost = repository.findById(postId)
