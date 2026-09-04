@@ -39,4 +39,18 @@ export const authService = {
     }
     return await response.text();
   },
+
+  logout: async (): Promise<string> => {
+    const url = "http://localhost:8080/api/auth/logout"
+    const options: RequestInit = {
+      method: "POST",
+      credentials: "include",
+    }
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      throw new HttpError(response.statusText, response.status);
+    }
+    return await response.text();
+  },
 };

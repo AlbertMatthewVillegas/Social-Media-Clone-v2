@@ -48,7 +48,7 @@ public class AuthController {
 
         Cookie cookie = new Cookie("auth_token", token);
         cookie.setHttpOnly(true);
-        cookie.setSecure(true); 
+        cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge((int) (JWT_EXPIRATION_MS / 1000));
         cookie.setAttribute("SameSite", "Strict");
@@ -76,6 +76,21 @@ public class AuthController {
 
         return ResponseEntity.ok("Registered successfully!");
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("auth_token", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        cookie.setAttribute("SameSite", "Strict");
+
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok("Logged out successfully!");
+    }
+
 
     @ExceptionHandler(AccountAlreadyExistsException.class)
     public ResponseEntity<String> handleAccountAlreadyExistsException(AccountAlreadyExistsException exception){
