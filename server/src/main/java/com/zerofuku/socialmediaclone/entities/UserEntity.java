@@ -52,11 +52,11 @@ public class UserEntity {
     private LocalDateTime createdAt;
 
     @ManyToMany
-    @JsonIgnoreProperties({"followers", "following", "hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"followers", "following","posts", "hibernateLazyInitializer", "handler"})
     private List<UserEntity> followers = new ArrayList<>();
 
     @ManyToMany
-    @JsonIgnoreProperties({"followers", "following", "hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"followers", "following","posts", "hibernateLazyInitializer", "handler"})
     private List<UserEntity> following = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

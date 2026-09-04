@@ -52,11 +52,11 @@ public class PostEntity {
 	private UserEntity user;
 
 	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	private List<CommentEntity> comments = new ArrayList<>();
+	@JsonIgnoreProperties({"post", "hibernateLazyInitializer", "handler"})
+    private List<CommentEntity> comments = new ArrayList<>();
 
-	
 	@ManyToMany
-    @JsonIgnoreProperties({"followers", "following", "hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"followers", "following", "posts", "hibernateLazyInitializer", "handler"})
     private List<UserEntity> likes = new ArrayList<>();
 
 	public void addLike(UserEntity user) {
@@ -65,16 +65,31 @@ public class PostEntity {
 		}
 	}
 
-	public void removeLike(UserEntity user) {
-		if (user != null) {
-			likes.remove(user);
+	public void removeLike(UserEntity user) { // this works?
+		if (user != null && user.getUserId() != null) {
+			likes.removeIf(likedUser -> likedUser != null
+					&& user.getUserId().equals(likedUser.getUserId()));
 		}
 	}
 
+    public void addComment(CommentEntity comment) {
+        if (comment != null) {
+            comments.add(comment);
+            comment.setPost(this);
+        }
+    }
+
+    public void removeComment(CommentEntity comment) {
+        if (comment != null) {
+            comments.remove(comment);
+            comment.setPost(null);
+        }
+    }
+
     public PostEntity(
-		List<String> content, 
-		String title, 
-		String description, 
+		List<String> content,
+		String title,
+		String description,
 		UserEntity user
 	) {
         this.content = content;

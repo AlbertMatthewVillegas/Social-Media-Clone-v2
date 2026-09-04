@@ -13,10 +13,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import com.zerofuku.socialmediaclone.dto.CommentRequest;
 import com.zerofuku.socialmediaclone.dto.ListResponse;
 import com.zerofuku.socialmediaclone.dto.PostRequest;
 import com.zerofuku.socialmediaclone.dto.Response;
+import com.zerofuku.socialmediaclone.entities.CommentEntity;
 import com.zerofuku.socialmediaclone.entities.PostEntity;
 import com.zerofuku.socialmediaclone.services.PostService;
 @RestController
@@ -114,4 +115,18 @@ public class PostController {
         );
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/{postId}/comments")
+    public ResponseEntity<Response<CommentEntity>> postMethodName(
+        @PathVariable UUID postId,
+        @RequestBody CommentRequest request
+    ) {
+        CommentEntity comment = postService.addComment(postId, request.getText());
+        Response<CommentEntity> response = new Response<>(
+            "successfully added comment",
+            comment
+        );
+        return ResponseEntity.ok(response);
+    }
+
 }

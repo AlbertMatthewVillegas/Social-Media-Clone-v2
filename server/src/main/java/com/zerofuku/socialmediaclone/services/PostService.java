@@ -7,14 +7,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.zerofuku.socialmediaclone.dto.PostRequest;
+import com.zerofuku.socialmediaclone.entities.CommentEntity;
 import com.zerofuku.socialmediaclone.entities.PostEntity;
 import com.zerofuku.socialmediaclone.entities.UserEntity;
+import com.zerofuku.socialmediaclone.exceptions.EntityNotFoundException;
+import com.zerofuku.socialmediaclone.exceptions.InvalidRequestException;
 import com.zerofuku.socialmediaclone.repositories.PostRepository;
 import com.zerofuku.socialmediaclone.utils.SecurityUtils;
 
-import com.zerofuku.socialmediaclone.exceptions.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import com.zerofuku.socialmediaclone.exceptions.InvalidRequestException;
 @Slf4j
 @Service
 public class PostService {
@@ -156,4 +157,56 @@ public class PostService {
         log.info("Post unliked, postId: {}, userId: {}", postId, currentUser.getUserId());
         return saved;
     }
+
+    @Transactional
+    public CommentEntity addComment(UUID postId, String commentContent) {
+        UserEntity currentUser = SecurityUtils.getCurrentUser();
+
+        PostEntity post = repository.findById(postId)
+                .orElseThrow(() -> {
+                    log.error("Post not found with ID: {}", postId);
+                    return new EntityNotFoundException("Post not found with ID: " + postId);
+                });
+
+        CommentEntity comment = new CommentEntity(post, currentUser, commentContent);
+        post.addComment(comment);
+
+        CommentEntity savedComment = repository.save(post).getComments().get(post.getComments().size() - 1); // Get the last added comment
+        log.info("Comment added to post, postId: {}, userId: {}", postId, currentUser.getUserId());
+        return savedComment;
+    }
+
+    @Transactional
+    public CommentEntity removeComment(UUID postId, UUID commentId) {
+        UserEntity currentUser = SecurityUtils.getCurrentUser();
+
+        PostEntity post = repository.findById(postId)
+                .orElseThrow(() -> {
+                    log.error("Post not found with ID: {}", postId);
+                    return new EntityNotFoundException("Post not found with ID: " + postId);
+                });
+
+        CommentEntity comment = post.getComments().stream()
+                .filter(c -> c.getCommentId().equals(commentId))
+                .findFirst()
+                .orElseThrow(() -> {
+                    log.error("Comment not found with ID: {}", commentId);
+                    return new EntityNotFoundException("Comment not found with ID: " + commentId);
+                });
+
+        SecurityUtils.validateOwnership(comment.getUser().getAuthId(), currentUser.getAuthId());
+
+        post.removeComment(comment);
+        PostEntity saved = repository.save(post);
+        CommentEntity removedComment = saved.getComments().stream()
+                .filter(c -> c.getCommentId().equals(commentId))
+                .findFirst()
+                .orElse(null);
+
+        log.info("Comment removed from post, postId: {}, commentId: {}, userId: {}", postId, commentId, currentUser.getUserId());
+        return removedComment;
+    }
+
+
+
 }
