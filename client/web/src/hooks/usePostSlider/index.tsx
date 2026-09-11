@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { PostEntity } from "../../entities/PostEntity";
 
-export function usePostPopUp(post: PostEntity) {
+export function usePostSlider(post: PostEntity) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const totalSlides = post.content?.length ?? 0;
 

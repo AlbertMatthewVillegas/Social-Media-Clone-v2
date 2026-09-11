@@ -58,7 +58,7 @@ export const postService = {
     return await response.text();
   },
 
-  likePost: async (postId: string): Promise<Response<PostEntity>> => {
+  likePost: async (postId: string): Promise<void> => {
     const url = `http://localhost:8080/api/posts/${postId}/like`;
     const options: RequestInit = {
       method: "POST",
@@ -69,10 +69,9 @@ export const postService = {
     if (!response.ok) {
       throw new HttpError(response.statusText, response.status);
     }
-    return await response.json();
   },
 
-  unlikePost: async (postId: string): Promise<Response<PostEntity>> => {
+  unlikePost: async (postId: string): Promise<void> => {
     const url = `http://localhost:8080/api/posts/${postId}/like`;
     const options: RequestInit = {
       method: "DELETE",
@@ -83,7 +82,6 @@ export const postService = {
     if (!response.ok) {
       throw new HttpError(response.statusText, response.status);
     }
-    return await response.json();
   },
 
   getAllPosts: async (): Promise<ListResponse<PostEntity>> => {

@@ -13,16 +13,23 @@ import {
 import type { PostEntity } from "../../entities/PostEntity";
 import MediaRenderer from "../MediaRenderer";
 import { usePopUp } from "../../hooks/usePopUp/hook";
-import { usePostPopUp } from "../../hooks/usePostPopUp";
+import { usePostSlider } from "../../hooks/usePostSlider";
 import usePostEngagement from "../../hooks/usePostEngagement";
+import { PostEngagementProvider } from "../../hooks/usePostEngagement";
+import type { CommentEntity } from "../../entities/CommentEntity";
 
-interface PostPopUpProps {
-  post: PostEntity;
+function PostPopUp({ post }: { post: PostEntity }) {
+  return (
+    <PostEngagementProvider post={post}>
+      <PostPopUpContent />
+    </PostEngagementProvider>
+  );
 }
 
-function PostPopUp({ post }: PostPopUpProps) {
+function PostPopUpContent() {
+  const { post } = usePostEngagement();
   const { isPopupOpen, closePopup } = usePopUp();
-  const { currentIndex, goToPrevious, goToNext } = usePostPopUp(post);
+  const { currentIndex, goToPrevious, goToNext } = usePostSlider(post);
 
   if (!isPopupOpen || !post?.content?.length) {
     return null;
@@ -64,9 +71,9 @@ function PostPopUp({ post }: PostPopUpProps) {
         </div>
 
         <div className="flex-4 flex flex-col p-4 bg-neutral-900">
-          <PostHeader {...post} />
-          <PostDetails {...post} />
-          <PostEngagementControls post={post} />
+          <PostHeader />
+          <PostDetails />
+          <PostEngagementControls />
         </div>
       </div>
     </div>
@@ -75,31 +82,15 @@ function PostPopUp({ post }: PostPopUpProps) {
 
 export default PostPopUp;
 
-interface PostEngagementControlsProps {
-  post: PostEntity;
-}
-
-function PostEngagementControls({ post }: PostEngagementControlsProps) {
-  const {
-    post: engagementPost,
-    isLiked,
-    commentText,
-    setCommentText,
-    toggleLike,
-    addComment,
-  } = usePostEngagement(post);
+function PostEngagementControls() {
+  const { post, isLiked, commentText, setCommentText, toggleLike, addComment } =
+    usePostEngagement();
 
   return (
-    <div className="flex flex-col p-4 border">
+    <div className="flex flex-col p-4 border flex-2">
       <div className="flex flex-row items-center gap-4 mb-4">
-        <button
-          className="text-white"
-          onClick={toggleLike}
-        >
-          <Heart
-            size={24}
-            fill={isLiked ? "red" : "none"}
-          />
+        <button className="text-white" onClick={toggleLike}>
+          <Heart size={24} fill={isLiked ? "red" : "none"} />
         </button>
         <button className="text-white">
           <MessageCircle size={24} />
@@ -108,7 +99,7 @@ function PostEngagementControls({ post }: PostEngagementControlsProps) {
           <Bookmark size={24} />
         </button>
       </div>
-      <span className="text-white mb-4">{engagementPost.likes?.length} likes</span>
+      <span className="text-white mb-4">{post.likes?.length} likes</span>
       <div className="flex flex-row items-center gap-4">
         <button className="text-white">
           <Smile size={24} />
@@ -128,11 +119,12 @@ function PostEngagementControls({ post }: PostEngagementControlsProps) {
   );
 }
 
-function PostDetails(post: PostEntity) {
+function PostDetails() {
   const imgSharedSize = 40; // Set the desired size for the shared image
+  const { post } = usePostEngagement();
   const { user, title, description } = post;
   return (
-    <div>
+    <div className="flex flex-col flex-8 overflow-y-auto">
       <div className="flex flex-row gap-2">
         {user?.profilePicture ? (
           <img
@@ -147,37 +139,34 @@ function PostDetails(post: PostEntity) {
         )}
         {user?.username} {title} {description}
       </div>
-      {post.comments?.map(
-        (
-          comment, // TODO: implement a comment component later
-        ) => (
-          <div key={comment.commentId} className="flex flex-row gap-2 mt-2">
-            {comment.user?.profilePicture ? (
-              <img
-                width={40}
-                height={40}
-                src={comment.user?.profilePicture}
-                alt={comment.user?.username}
-                className="rounded-full"
-              />
-            ) : (
-              <CircleUser />
-            )}
-            <div className="flex flex-col">
-              <span className="text-white font-semibold">
-                {comment.user?.username}
-              </span>
-              <span className="text-white">{comment.text}</span>
-            </div>
+      {post.comments?.map((comment: CommentEntity) => (
+        <div key={comment.commentId} className="flex flex-row gap-2 mt-2">
+          {comment.user?.profilePicture ? (
+            <img
+              width={40}
+              height={40}
+              src={comment.user?.profilePicture}
+              alt={comment.user?.username}
+              className="rounded-full"
+            />
+          ) : (
+            <CircleUser />
+          )}
+          <div className="flex flex-col">
+            <span className="text-white font-semibold">
+              {comment.user?.username}
+            </span>
+            <span className="text-white">{comment.text}</span>
           </div>
-        ),
-      )}
+        </div>
+      ))}
     </div>
   );
 }
 
-function PostHeader(post: PostEntity) {
+function PostHeader() {
   const imgSharedSize = 40; // Set the desired size for the shared image
+  const { post } = usePostEngagement();
   const { user } = post;
   if (!post) {
     return (
@@ -196,7 +185,7 @@ function PostHeader(post: PostEntity) {
   }
 
   return (
-    <div className="flex flex-row items-center justify-between gap-4 mb-4">
+    <div className="flex flex-row items-center justify-between gap-4 mb-4 flex-1">
       <div className="flex flex-row items-center gap-2">
         {user?.profilePicture ? (
           <img

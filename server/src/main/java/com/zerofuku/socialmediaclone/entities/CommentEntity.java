@@ -41,11 +41,12 @@ public class CommentEntity {
     @CreationTimestamp
 	private LocalDateTime createdAt;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({ "followers", "following", "posts", "hibernateLazyInitializer", "handler" })
+    @ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private UserEntity user;
 
-	@JsonIgnore
+	@JsonIgnoreProperties({"comments","likes","user","content","title","description", "hibernateLazyInitializer", "handler"})
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "post_id")
 	private PostEntity post;
